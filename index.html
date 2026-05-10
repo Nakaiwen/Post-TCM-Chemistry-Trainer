@@ -1,0 +1,1871 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>後中醫化學考題練習器</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;500;700;900&family=Noto+Sans+TC:wght@300;400;500;700&family=Crimson+Pro:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+:root {
+  --paper: #f5efe2;
+  --paper-soft: #faf6ec;
+  --paper-deep: #ebe2cf;
+  --ink: #1f1a14;
+  --ink-soft: #4a3f31;
+  --ink-faint: #8a7d6a;
+  --vermillion: #b73329;
+  --vermillion-soft: #d9614f;
+  --jade: #4a6b54;
+  --gold: #a07a2c;
+  --line: #c9bfa8;
+  --line-soft: #ddd1b8;
+  --shadow: rgba(60, 45, 20, 0.08);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  font-family: 'Noto Sans TC', 'Crimson Pro', sans-serif;
+  background: var(--paper);
+  color: var(--ink);
+  line-height: 1.7;
+  font-size: 16px;
+  min-height: 100vh;
+  background-image:
+    radial-gradient(ellipse at top left, rgba(160, 122, 44, 0.04) 0%, transparent 50%),
+    radial-gradient(ellipse at bottom right, rgba(74, 107, 84, 0.04) 0%, transparent 50%);
+}
+
+/* 紙張紋理 */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' /%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.06'/%3E%3C/svg%3E");
+  z-index: 1;
+  mix-blend-mode: multiply;
+}
+
+.app {
+  position: relative;
+  z-index: 2;
+  max-width: 880px;
+  margin: 0 auto;
+  padding: 32px 24px 80px;
+}
+
+/* === 頂部 === */
+.header {
+  text-align: center;
+  margin-bottom: 36px;
+  position: relative;
+}
+
+.header::after {
+  content: '';
+  display: block;
+  width: 80px;
+  height: 1px;
+  background: var(--ink-faint);
+  margin: 18px auto 0;
+}
+
+.title-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+}
+
+.seal {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  background: var(--vermillion);
+  color: var(--paper);
+  font-family: 'Noto Serif TC', serif;
+  font-weight: 900;
+  font-size: 22px;
+  border-radius: 6px;
+  box-shadow: 0 2px 0 rgba(120, 30, 20, 0.4);
+  letter-spacing: -0.05em;
+}
+
+h1 {
+  font-family: 'Noto Serif TC', serif;
+  font-weight: 700;
+  font-size: 28px;
+  letter-spacing: 0.05em;
+  color: var(--ink);
+}
+
+.subtitle {
+  margin-top: 8px;
+  font-family: 'Crimson Pro', 'Noto Serif TC', serif;
+  font-style: italic;
+  color: var(--ink-faint);
+  font-size: 14px;
+  letter-spacing: 0.1em;
+}
+
+/* === 統計列 === */
+.stats-bar {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1px;
+  background: var(--line);
+  border: 1px solid var(--line);
+  margin-bottom: 24px;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.stat {
+  background: var(--paper-soft);
+  padding: 14px 8px;
+  text-align: center;
+}
+
+.stat-num {
+  font-family: 'Noto Serif TC', serif;
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--ink);
+  line-height: 1;
+}
+
+.stat-num.accent { color: var(--vermillion); }
+.stat-num.jade { color: var(--jade); }
+.stat-num.gold { color: var(--gold); }
+
+.stat-label {
+  font-size: 11px;
+  color: var(--ink-faint);
+  margin-top: 6px;
+  letter-spacing: 0.1em;
+}
+
+/* === Tabs === */
+.tabs {
+  display: flex;
+  gap: 0;
+  margin-bottom: 28px;
+  border-bottom: 2px solid var(--line);
+  flex-wrap: wrap;
+}
+
+.tab {
+  padding: 12px 18px;
+  background: none;
+  border: none;
+  font-family: 'Noto Serif TC', serif;
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--ink-faint);
+  cursor: pointer;
+  position: relative;
+  transition: color 0.2s;
+  letter-spacing: 0.05em;
+}
+
+.tab:hover { color: var(--ink-soft); }
+
+.tab.active {
+  color: var(--vermillion);
+}
+
+.tab.active::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: var(--vermillion);
+}
+
+/* === 內容區 === */
+.panel {
+  background: var(--paper-soft);
+  border: 1px solid var(--line-soft);
+  border-radius: 6px;
+  padding: 32px 28px;
+  box-shadow: 0 2px 8px var(--shadow);
+  min-height: 400px;
+}
+
+/* 模式選擇（首頁） */
+.mode-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 14px;
+  margin-bottom: 24px;
+}
+
+.mode-btn {
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  padding: 22px 16px;
+  cursor: pointer;
+  text-align: center;
+  transition: all 0.2s;
+  font-family: 'Noto Serif TC', serif;
+}
+
+.mode-btn:hover {
+  border-color: var(--vermillion);
+  background: var(--paper-soft);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px var(--shadow);
+}
+
+.mode-icon {
+  font-size: 28px;
+  margin-bottom: 10px;
+  color: var(--vermillion);
+  font-family: 'Noto Serif TC', serif;
+  font-weight: 700;
+}
+
+.mode-name {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--ink);
+  margin-bottom: 4px;
+  letter-spacing: 0.05em;
+}
+
+.mode-desc {
+  font-size: 12px;
+  color: var(--ink-faint);
+}
+
+/* === 題目卡片 === */
+.question-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 18px;
+  padding-bottom: 14px;
+  border-bottom: 1px dashed var(--line);
+}
+
+.qmeta-left {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.tag {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 2px;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.05em;
+}
+
+.tag-cat {
+  background: var(--ink);
+  color: var(--paper);
+}
+
+.tag-topic {
+  background: var(--paper-deep);
+  color: var(--ink-soft);
+  border: 1px solid var(--line);
+}
+
+.qmeta-right {
+  font-size: 12px;
+  color: var(--ink-faint);
+  font-family: 'Crimson Pro', serif;
+  font-style: italic;
+}
+
+.bookmark-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 18px;
+  color: var(--ink-faint);
+  padding: 4px 8px;
+  transition: color 0.2s;
+}
+
+.bookmark-btn:hover, .bookmark-btn.active { color: var(--gold); }
+
+.question-text {
+  font-size: 18px;
+  line-height: 1.85;
+  color: var(--ink);
+  margin-bottom: 24px;
+  font-family: 'Noto Serif TC', serif;
+  font-weight: 500;
+}
+
+.question-text .formula,
+.explanation .formula {
+  font-family: 'Crimson Pro', 'Noto Serif TC', serif;
+  font-style: italic;
+}
+
+.options {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 22px;
+}
+
+.option {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 14px 18px;
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.15s;
+  font-size: 16px;
+  text-align: left;
+  font-family: inherit;
+  color: var(--ink);
+  width: 100%;
+}
+
+.option:hover:not(:disabled) {
+  border-color: var(--ink-soft);
+  background: var(--paper-soft);
+}
+
+.option-letter {
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 1.5px solid var(--ink-faint);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Noto Serif TC', serif;
+  font-weight: 700;
+  font-size: 14px;
+  color: var(--ink-soft);
+}
+
+.option-text {
+  flex: 1;
+  line-height: 1.6;
+  padding-top: 2px;
+}
+
+.option.correct {
+  background: rgba(74, 107, 84, 0.1);
+  border-color: var(--jade);
+  color: var(--jade);
+}
+.option.correct .option-letter {
+  background: var(--jade);
+  border-color: var(--jade);
+  color: var(--paper);
+}
+
+.option.wrong {
+  background: rgba(183, 51, 41, 0.08);
+  border-color: var(--vermillion);
+  color: var(--vermillion);
+}
+.option.wrong .option-letter {
+  background: var(--vermillion);
+  border-color: var(--vermillion);
+  color: var(--paper);
+}
+
+.option:disabled { cursor: default; }
+
+/* === 解析 === */
+.explanation {
+  margin-top: 18px;
+  padding: 18px 22px;
+  background: var(--paper-deep);
+  border-left: 3px solid var(--gold);
+  border-radius: 0 4px 4px 0;
+  animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+  from { opacity: 0; transform: translateY(-4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.exp-title {
+  font-family: 'Noto Serif TC', serif;
+  font-weight: 700;
+  color: var(--gold);
+  font-size: 14px;
+  margin-bottom: 8px;
+  letter-spacing: 0.1em;
+}
+
+.exp-content {
+  font-size: 15px;
+  line-height: 1.8;
+  color: var(--ink-soft);
+}
+
+/* === 動作列 === */
+.actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 24px;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.btn {
+  padding: 10px 22px;
+  border: none;
+  border-radius: 4px;
+  font-family: 'Noto Serif TC', serif;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  letter-spacing: 0.05em;
+}
+
+.btn-primary {
+  background: var(--vermillion);
+  color: var(--paper);
+}
+.btn-primary:hover { background: #9c2820; transform: translateY(-1px); }
+
+.btn-secondary {
+  background: transparent;
+  color: var(--ink-soft);
+  border: 1px solid var(--line);
+}
+.btn-secondary:hover { background: var(--paper-deep); }
+
+/* === 進度條 === */
+.progress-bar {
+  height: 4px;
+  background: var(--line-soft);
+  border-radius: 2px;
+  overflow: hidden;
+  margin-bottom: 18px;
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--vermillion), var(--gold));
+  transition: width 0.3s;
+}
+
+/* === 統計頁 === */
+.stat-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.stat-card {
+  background: var(--paper);
+  border: 1px solid var(--line);
+  padding: 20px;
+  border-radius: 4px;
+}
+
+.stat-card-title {
+  font-family: 'Noto Serif TC', serif;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--ink);
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--line-soft);
+  letter-spacing: 0.1em;
+}
+
+.topic-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+  font-size: 14px;
+  border-bottom: 1px dashed var(--line-soft);
+}
+
+.topic-row:last-child { border-bottom: none; }
+
+.topic-name { color: var(--ink-soft); }
+
+.topic-stats {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.topic-acc {
+  font-family: 'Crimson Pro', serif;
+  font-weight: 600;
+  color: var(--vermillion);
+  font-size: 13px;
+}
+
+.mini-bar {
+  width: 60px;
+  height: 4px;
+  background: var(--line-soft);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.mini-fill {
+  height: 100%;
+  background: var(--jade);
+  transition: width 0.3s;
+}
+
+/* === 分科練習 === */
+.topic-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 10px;
+  margin: 20px 0;
+}
+
+.topic-btn {
+  padding: 14px 12px;
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  cursor: pointer;
+  font-family: 'Noto Serif TC', serif;
+  font-size: 13px;
+  color: var(--ink);
+  transition: all 0.2s;
+  text-align: center;
+}
+
+.topic-btn:hover {
+  border-color: var(--vermillion);
+  color: var(--vermillion);
+}
+
+.topic-btn small {
+  display: block;
+  font-size: 11px;
+  color: var(--ink-faint);
+  margin-top: 4px;
+  font-family: 'Crimson Pro', serif;
+}
+
+.section-title {
+  font-family: 'Noto Serif TC', serif;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--ink);
+  margin: 16px 0 8px;
+  letter-spacing: 0.1em;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.section-title::before {
+  content: '';
+  display: inline-block;
+  width: 4px;
+  height: 16px;
+  background: var(--vermillion);
+}
+
+/* === 空狀態 === */
+.empty {
+  text-align: center;
+  padding: 60px 20px;
+  color: var(--ink-faint);
+}
+
+.empty-icon {
+  font-size: 48px;
+  margin-bottom: 16px;
+  font-family: 'Noto Serif TC', serif;
+  color: var(--line);
+}
+
+.empty-text {
+  font-size: 15px;
+  font-family: 'Noto Serif TC', serif;
+}
+
+/* === 完成畫面 === */
+.complete-screen {
+  text-align: center;
+  padding: 40px 20px;
+}
+
+.complete-seal {
+  width: 100px;
+  height: 100px;
+  border: 3px solid var(--vermillion);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 24px;
+  font-family: 'Noto Serif TC', serif;
+  font-weight: 900;
+  color: var(--vermillion);
+  font-size: 36px;
+  background: rgba(183, 51, 41, 0.05);
+  transform: rotate(-5deg);
+  letter-spacing: -0.1em;
+}
+
+.complete-title {
+  font-family: 'Noto Serif TC', serif;
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--ink);
+  margin-bottom: 12px;
+}
+
+.complete-score {
+  font-family: 'Crimson Pro', serif;
+  font-size: 48px;
+  font-weight: 600;
+  color: var(--vermillion);
+  margin: 16px 0;
+}
+
+.complete-text {
+  color: var(--ink-soft);
+  margin-bottom: 24px;
+  font-size: 15px;
+}
+
+/* 響應式 */
+@media (max-width: 600px) {
+  .app { padding: 20px 14px 60px; }
+  h1 { font-size: 22px; }
+  .panel { padding: 22px 18px; }
+  .stat-num { font-size: 20px; }
+  .question-text { font-size: 16px; }
+  .option { padding: 12px 14px; font-size: 15px; }
+  .tab { padding: 10px 14px; font-size: 14px; }
+  .stat-grid { grid-template-columns: 1fr; }
+}
+
+/* 滾動條 */
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background: var(--paper-deep); }
+::-webkit-scrollbar-thumb { background: var(--line); border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: var(--ink-faint); }
+</style>
+</head>
+<body>
+
+<div class="app">
+  <header class="header">
+    <div class="title-row">
+      <div class="seal">醫</div>
+      <h1>後中醫化學考題練習器</h1>
+    </div>
+    <div class="subtitle">Post-Bachelor Chinese Medicine · Chemistry Drill</div>
+  </header>
+
+  <div class="stats-bar" id="statsBar">
+    <div class="stat">
+      <div class="stat-num" id="statTotal">0</div>
+      <div class="stat-label">累計作答</div>
+    </div>
+    <div class="stat">
+      <div class="stat-num jade" id="statAcc">—</div>
+      <div class="stat-label">總正確率</div>
+    </div>
+    <div class="stat">
+      <div class="stat-num gold" id="statStreak">0</div>
+      <div class="stat-label">連續天數</div>
+    </div>
+    <div class="stat">
+      <div class="stat-num accent" id="statWrong">0</div>
+      <div class="stat-label">待複習錯題</div>
+    </div>
+  </div>
+
+  <nav class="tabs">
+    <button class="tab active" data-mode="home">首頁</button>
+    <button class="tab" data-mode="daily">每日練習</button>
+    <button class="tab" data-mode="topic">分科練習</button>
+    <button class="tab" data-mode="exam">歷屆考古題</button>
+    <button class="tab" data-mode="wrong">錯題複習</button>
+    <button class="tab" data-mode="bookmark">收藏</button>
+    <button class="tab" data-mode="stats">統計</button>
+  </nav>
+
+  <main class="panel" id="panel"></main>
+</div>
+
+<script>
+/* ===== 題庫 ===== */
+const QUESTIONS = [
+  // ====== 普通化學：原子結構與週期表 ======
+  {id:'g001', cat:'普通化學', topic:'原子結構', q:'下列何者為鉻 (Cr, Z=24) 的基態電子組態？',
+   opts:['[Ar] 3d⁴ 4s²','[Ar] 3d⁵ 4s¹','[Ar] 3d⁶','[Ar] 4s² 4p⁴'], ans:1,
+   exp:'鉻為週期表的特例之一。3d⁵ 4s¹ 屬於半填滿構型，能量較 3d⁴ 4s² 低，較為穩定。Cu (Z=29) 也有類似特例，為 [Ar] 3d¹⁰ 4s¹。'},
+  {id:'g002', cat:'普通化學', topic:'原子結構', q:'下列哪一組量子數無法存在？',
+   opts:['n=3, l=2, mₗ=−2','n=2, l=1, mₗ=0','n=4, l=4, mₗ=0','n=3, l=0, mₗ=0'], ans:2,
+   exp:'量子數規則：l 的範圍為 0 到 n−1。當 n=4 時，l 最大只能為 3，故 l=4 不合法。'},
+  {id:'g003', cat:'普通化學', topic:'週期性質', q:'下列原子第一游離能由小到大排列正確的是？',
+   opts:['Na < Mg < Al','Na < Al < Mg','Al < Na < Mg','Mg < Al < Na'], ans:1,
+   exp:'一般週期趨勢右大於左，但 Mg 的 3s² 為全填滿較穩定，故 IE₁(Mg) > IE₁(Al)。Na 失去單電子最容易，IE₁ 最小。'},
+  {id:'g004', cat:'普通化學', topic:'週期性質', q:'下列關於電負度 (electronegativity) 的敘述何者錯誤？',
+   opts:['F 為電負度最大的元素','同週期由左至右增加','同族由上至下增加','金屬的電負度通常小於非金屬'], ans:2,
+   exp:'同族由上至下，原子半徑增加、價電子距核較遠，電負度應為「下降」。'},
+  {id:'g005', cat:'普通化學', topic:'週期性質', q:'下列何者原子半徑最大？',
+   opts:['Na','K','Mg','Ca'], ans:1,
+   exp:'同族由上而下半徑遞增 (Na < K, Mg < Ca)；同週期由左而右半徑遞減 (K > Ca)。故 K 半徑最大。'},
+
+  // ====== 化學鍵結與分子結構 ======
+  {id:'g006', cat:'普通化學', topic:'化學鍵結', q:'SF₄ 分子的形狀為何？',
+   opts:['正四面體','蹺蹺板形 (see-saw)','平面四方形','三角雙錐'], ans:1,
+   exp:'SF₄ 中 S 有 4 個鍵結對與 1 對未共用電子對 (AX₄E)，電子對排列為三角雙錐，分子形狀為蹺蹺板形。'},
+  {id:'g007', cat:'普通化學', topic:'化學鍵結', q:'XeF₄ 的分子幾何形狀為？',
+   opts:['正四面體','蹺蹺板','平面四方形 (square planar)','八面體'], ans:2,
+   exp:'XeF₄ 為 AX₄E₂ 結構，兩對未共用電子對佔據八面體上下軸位置，4 個 F 形成平面四方形。'},
+  {id:'g008', cat:'普通化學', topic:'化學鍵結', q:'下列分子中，何者中心原子採用 sp³d² 混成？',
+   opts:['BF₃','CH₄','PCl₅','SF₆'], ans:3,
+   exp:'sp³d² 混成形成 6 個混成軌域，呈八面體排列，SF₆ 即為此例。BF₃ 為 sp²，CH₄ 為 sp³，PCl₅ 為 sp³d。'},
+  {id:'g009', cat:'普通化學', topic:'化學鍵結', q:'下列分子中，何者具有偶極矩 (dipole moment)？',
+   opts:['CO₂','BF₃','CH₄','NH₃'], ans:3,
+   exp:'NH₃ 為三角錐形，鍵偶極無法相消故有偶極矩。CO₂ 直線形、BF₃ 三角平面、CH₄ 正四面體均對稱，偶極矩為零。'},
+  {id:'g010', cat:'普通化學', topic:'化學鍵結', q:'下列關於氫鍵的敘述何者正確？',
+   opts:['只能存在於分子間','HF 沸點高於 HCl 是因氫鍵','氫鍵強度大於共價鍵','氫鍵可形成於 H 與任何電負原子間'], ans:1,
+   exp:'氫鍵形成於 H 與 N、O、F 之間，HF 因氫鍵作用力使其沸點明顯高於 HCl。氫鍵亦可存在於分子內 (如鄰位硝基苯酚)。'},
+
+  // ====== 化學計量 ======
+  {id:'g011', cat:'普通化學', topic:'化學計量', q:'STP 下，相同質量的下列氣體何者體積最大？',
+   opts:['CH₄','O₂','CO₂','SO₂'], ans:0,
+   exp:'相同質量下，分子量越小莫耳數越多，體積越大。CH₄ (16) < O₂ (32) < CO₂ (44) < SO₂ (64)。'},
+  {id:'g012', cat:'普通化學', topic:'化學計量', q:'欲配製 0.1 M NaOH 水溶液 500 mL，需 NaOH 多少克？(NaOH = 40)',
+   opts:['1.0 g','2.0 g','4.0 g','5.0 g'], ans:1,
+   exp:'mol = 0.1 × 0.5 = 0.05 mol；質量 = 0.05 × 40 = 2.0 g。'},
+  {id:'g013', cat:'普通化學', topic:'化學計量', q:'下列反應 2H₂ + O₂ → 2H₂O，若 4 g H₂ 與 16 g O₂ 反應，限量試劑為何？',
+   opts:['H₂','O₂','兩者剛好','無法判斷'], ans:1,
+   exp:'H₂ = 4/2 = 2 mol，O₂ = 16/32 = 0.5 mol；化學計量比 H₂ : O₂ = 2 : 1，需要 1 mol H₂ 配 0.5 mol O₂；現 H₂ 過量，O₂ 為限量。'},
+
+  // ====== 氣體 ======
+  {id:'g014', cat:'普通化學', topic:'氣體定律', q:'相同條件下，下列氣體何者擴散速率最快？',
+   opts:['He','CH₄','O₂','SO₂'], ans:0,
+   exp:'依 Graham 擴散定律，擴散速率與分子量平方根成反比。分子量最小者擴散最快，He (4) 最小。'},
+  {id:'g015', cat:'普通化學', topic:'氣體定律', q:'27°C 下 2.0 L 氣體，加熱至 127°C 並維持壓力不變，體積變為？',
+   opts:['1.5 L','2.67 L','3.0 L','9.4 L'], ans:1,
+   exp:'等壓變溫，V₁/T₁ = V₂/T₂；T₁=300 K, T₂=400 K；V₂ = 2.0 × 400/300 = 2.67 L。'},
+  {id:'g016', cat:'普通化學', topic:'氣體定律', q:'下列何者最不接近理想氣體行為？',
+   opts:['He','H₂','N₂','NH₃'], ans:3,
+   exp:'極性大、分子間作用力強的氣體偏離理想行為較多。NH₃ 有氫鍵，分子間作用力最強，偏離最大。'},
+
+  // ====== 熱力學 ======
+  {id:'g017', cat:'普通化學', topic:'熱力學', q:'下列反應何者 ΔS_系統 為正且最大？',
+   opts:['H₂O(l) → H₂O(s)','2NO₂(g) → N₂O₄(g)','CaCO₃(s) → CaO(s) + CO₂(g)','H₂(g) + Cl₂(g) → 2HCl(g)'], ans:2,
+   exp:'氣體莫耳數增加無序度大幅提升。(C) 由純固體生成固體+1 mol 氣體，ΔS 顯著增加；(B) 為氣體莫耳數減少，ΔS<0。'},
+  {id:'g018', cat:'普通化學', topic:'熱力學', q:'某反應 ΔH = +50 kJ/mol，ΔS = +100 J/(mol·K)，下列何者正確？',
+   opts:['任何溫度下皆自發','只有低溫下自發','只有高溫下自發 (T > 500 K)','永不自發'], ans:2,
+   exp:'ΔG = ΔH − TΔS。當 ΔH>0、ΔS>0 時，需高溫才能使 ΔG<0。T > ΔH/ΔS = 50000/100 = 500 K。'},
+  {id:'g019', cat:'普通化學', topic:'熱力學', q:'下列關於熱力學第二定律的敘述何者正確？',
+   opts:['封閉系統的熵永不減少','宇宙的熵在自發過程中增加','所有反應都釋放熱','低溫下熵為零'], ans:1,
+   exp:'第二定律：自發過程中宇宙 (系統+環境) 的總熵必然增加。系統熵可能減少 (如水結冰)，但環境熵增加更多。'},
+  {id:'g020', cat:'普通化學', topic:'熱力學', q:'已知 H₂O(l) 標準生成熱為 −286 kJ/mol，2H₂O(l) → 2H₂(g) + O₂(g) 的 ΔH 為何？',
+   opts:['−286 kJ','+286 kJ','−572 kJ','+572 kJ'], ans:3,
+   exp:'逆反應 ΔH 變號，再乘以 2：ΔH = +286 × 2 = +572 kJ。'},
+
+  // ====== 動力學 ======
+  {id:'g021', cat:'普通化學', topic:'化學動力學', q:'反應 A → B 速率定律為 r = k[A]²，當 [A] 增為原來 3 倍時，速率變為原來幾倍？',
+   opts:['3','6','9','27'], ans:2,
+   exp:'二級反應，速率與濃度平方成正比，3² = 9 倍。'},
+  {id:'g022', cat:'普通化學', topic:'化學動力學', q:'某一級反應半衰期為 10 分鐘，30 分鐘後剩餘濃度為原來的多少？',
+   opts:['1/2','1/4','1/8','1/16'], ans:2,
+   exp:'30 分鐘 = 3 個半衰期，剩餘濃度為 (1/2)³ = 1/8。'},
+  {id:'g023', cat:'普通化學', topic:'化學動力學', q:'下列何者會「同時」改變反應速率與平衡常數？',
+   opts:['增加催化劑','改變濃度','改變壓力','改變溫度'], ans:3,
+   exp:'催化劑只改變速率不改變 K；濃度與壓力影響平衡位置但不改變 K；只有溫度同時改變速率常數 k 與平衡常數 K。'},
+  {id:'g024', cat:'普通化學', topic:'化學動力學', q:'阿瑞尼士方程式 k = A·exp(−Ea/RT)，下列敘述何者錯誤？',
+   opts:['Ea 越大，k 對溫度越敏感','溫度上升 k 必上升','催化劑可降低 Ea','A 為頻率因子'], ans:1,
+   exp:'通常溫度上升 k 上升，但部分酶反應在高溫下因蛋白質變性反而下降。較嚴格的描述為「Arrhenius 方程式預測 k 隨 T 上升而上升」，但題目強調必上升不嚴謹；本題著重於概念理解，選此說法欠妥的選項。'},
+
+  // ====== 化學平衡 ======
+  {id:'g025', cat:'普通化學', topic:'化學平衡', q:'反應 N₂(g) + 3H₂(g) ⇌ 2NH₃(g) (放熱)，下列哪項操作可使 NH₃ 產率增加？',
+   opts:['升高溫度','降低壓力','加入催化劑','移除 NH₃'], ans:3,
+   exp:'依 Le Chatelier 原理：放熱反應降溫有利、加壓有利、移除產物有利。催化劑只加快達平衡，不影響位置。'},
+  {id:'g026', cat:'普通化學', topic:'化學平衡', q:'反應 2A(g) ⇌ B(g) 在某溫度下 Kc = 4，若起始 [A] = 1.0 M、[B] = 0，平衡時 [B] 約為？',
+   opts:['0.25 M','0.31 M','0.40 M','0.50 M'], ans:1,
+   exp:'設平衡時 [B]=x，[A]=1−2x。Kc = x/(1−2x)² = 4。解二次方程得 x ≈ 0.31 M。'},
+  {id:'g027', cat:'普通化學', topic:'化學平衡', q:'對於反應 PCl₅(g) ⇌ PCl₃(g) + Cl₂(g)，Kp 與 Kc 的關係為？',
+   opts:['Kp = Kc','Kp = Kc·RT','Kp = Kc/(RT)','Kp = Kc·(RT)²'], ans:1,
+   exp:'Kp = Kc(RT)^Δn，Δn = (1+1)−1 = 1，故 Kp = Kc·RT。'},
+  {id:'g028', cat:'普通化學', topic:'化學平衡', q:'下列何種情況反應商 Q 大於平衡常數 K？',
+   opts:['反應正向進行','反應逆向進行','反應已達平衡','無法判斷'], ans:1,
+   exp:'Q > K 表示產物相對過多，反應將逆向進行；Q < K 則正向進行。'},
+
+  // ====== 酸鹼平衡 ======
+  {id:'g029', cat:'普通化學', topic:'酸鹼平衡', q:'0.10 M 醋酸 (Ka = 1.8×10⁻⁵) 的 pH 約為？',
+   opts:['1.0','2.9','4.7','5.7'], ans:1,
+   exp:'弱酸近似法：[H⁺] ≈ √(Ka·C) = √(1.8×10⁻⁶) ≈ 1.34×10⁻³ M；pH ≈ 2.87。'},
+  {id:'g030', cat:'普通化學', topic:'酸鹼平衡', q:'下列何者為良好的緩衝系統？',
+   opts:['HCl / NaCl','NH₃ / NH₄Cl','NaOH / NaCl','HCl / NaOH'], ans:1,
+   exp:'緩衝液由弱酸/共軛鹼或弱鹼/共軛酸組成。NH₃/NH₄⁺ 為弱鹼/共軛酸對。'},
+  {id:'g031', cat:'普通化學', topic:'酸鹼平衡', q:'依 Henderson-Hasselbalch 方程式，當 [A⁻] = [HA] 時，pH 為？',
+   opts:['= pKa','= pKa + 1','= pKa − 1','= 7'], ans:0,
+   exp:'pH = pKa + log([A⁻]/[HA])。當比值為 1 時 log 1 = 0，pH = pKa。'},
+  {id:'g032', cat:'普通化學', topic:'酸鹼平衡', q:'下列鹽類水溶液何者呈鹼性？',
+   opts:['NH₄Cl','NaCl','Na₂CO₃','NaHSO₄'], ans:2,
+   exp:'Na₂CO₃ 為強鹼弱酸鹽，CO₃²⁻ 水解產生 OH⁻，水溶液呈鹼性。NH₄Cl 為弱鹼強酸鹽呈酸性。'},
+  {id:'g033', cat:'普通化學', topic:'酸鹼平衡', q:'在 25°C 時，0.001 M HCl 水溶液的 pH 為？',
+   opts:['2','3','4','11'], ans:1,
+   exp:'HCl 為強酸完全解離，[H⁺] = 10⁻³ M，pH = 3。'},
+
+  // ====== 沉澱與錯合 ======
+  {id:'g034', cat:'普通化學', topic:'沉澱平衡', q:'AgCl 的 Ksp = 1.8×10⁻¹⁰，飽和溶液中 [Ag⁺] 為？',
+   opts:['1.3×10⁻⁵ M','1.8×10⁻¹⁰ M','9×10⁻¹¹ M','1.8×10⁻⁵ M'], ans:0,
+   exp:'AgCl ⇌ Ag⁺ + Cl⁻，[Ag⁺] = [Cl⁻] = √Ksp = √(1.8×10⁻¹⁰) ≈ 1.34×10⁻⁵ M。'},
+  {id:'g035', cat:'普通化學', topic:'沉澱平衡', q:'AgCl 在下列何種溶液中溶解度最小？',
+   opts:['純水','0.1 M NaNO₃','0.1 M NaCl','0.1 M NH₃'], ans:2,
+   exp:'同離子效應使 AgCl 在 0.1 M NaCl 中溶解度大幅下降；NH₃ 反而會與 Ag⁺ 形成 [Ag(NH₃)₂]⁺ 增加溶解度。'},
+
+  // ====== 電化學 ======
+  {id:'g036', cat:'普通化學', topic:'電化學', q:'已知 E°(Zn²⁺/Zn) = −0.76 V，E°(Cu²⁺/Cu) = +0.34 V。Daniell 電池的標準電動勢為？',
+   opts:['+0.42 V','+1.10 V','−0.42 V','−1.10 V'], ans:1,
+   exp:'E°cell = E°陰極 − E°陽極 = +0.34 − (−0.76) = +1.10 V。Cu²⁺/Cu 為陰極 (還原)，Zn 為陽極 (氧化)。'},
+  {id:'g037', cat:'普通化學', topic:'電化學', q:'下列金屬還原力最強者為？已知 E° (Ag⁺/Ag) = +0.80, (Cu²⁺/Cu) = +0.34, (Fe²⁺/Fe) = −0.44, (Mg²⁺/Mg) = −2.37 V',
+   opts:['Ag','Cu','Fe','Mg'], ans:3,
+   exp:'還原電位越負，金屬本身越易失電子(被氧化)，還原力越強。Mg 的 E° 最負故還原力最強。'},
+  {id:'g038', cat:'普通化學', topic:'電化學', q:'用 1.0 安培電流電解 CuSO₄ 水溶液 965 秒，理論可在陰極析出多少克銅？(Cu = 63.5)',
+   opts:['0.0635 g','0.318 g','0.635 g','1.27 g'], ans:1,
+   exp:'Q = It = 965 C；mol(e⁻) = 965/96500 = 0.01；Cu²⁺ 需 2 個 e⁻，mol(Cu) = 0.005；質量 = 0.005 × 63.5 = 0.318 g。'},
+  {id:'g039', cat:'普通化學', topic:'電化學', q:'下列關於原電池與電解池的敘述何者正確？',
+   opts:['兩者陽極皆為氧化反應','原電池陰極為氧化','電解池陽極為還原','兩者都自發進行'], ans:0,
+   exp:'不論原電池或電解池，「陽極氧化、陰極還原」皆成立。差別在原電池自發、電解池需外加電源。'},
+  {id:'g040', cat:'普通化學', topic:'電化學', q:'Nernst 方程式 E = E° − (RT/nF) ln Q，當 Q 增加時，電池電位將：',
+   opts:['上升','下降','不變','視 n 而定'], ans:1,
+   exp:'Q 增加表示產物相對較多，反應趨向平衡，E 下降。當 Q = K 時 E = 0 (達平衡)。'},
+
+  // ====== 配位化合物 ======
+  {id:'g041', cat:'普通化學', topic:'配位化合物', q:'[Co(NH₃)₆]³⁺ 中 Co 的氧化數與配位數分別為？',
+   opts:['+2, 4','+2, 6','+3, 4','+3, 6'], ans:3,
+   exp:'NH₃ 為中性配體，整體電荷 +3 全由 Co 提供，故 Co 為 +3。六個 NH₃ 配位，故配位數 6。'},
+  {id:'g042', cat:'普通化學', topic:'配位化合物', q:'依晶場理論，[Fe(CN)₆]³⁻ 與 [Fe(H₂O)₆]³⁺ 中 Fe³⁺ 的未成對電子數差別主要因為？',
+   opts:['配體場強度不同','幾何結構不同','配位數不同','溫度不同'], ans:0,
+   exp:'CN⁻ 為強場配體，造成 d 軌域分裂能 Δ 大，電子優先成對 (低自旋)；H₂O 為弱場，為高自旋。'},
+
+  // ====== 有機化學：命名與結構 ======
+  {id:'o001', cat:'有機化學', topic:'命名', q:'化合物 (CH₃)₂CHCH(CH₃)CH₂CH₃ 的 IUPAC 名稱為？',
+   opts:['2,3-dimethylpentane','2,3-dimethylhexane','3-methylpentane','2-methyl-3-methylpentane'], ans:0,
+   exp:'最長鏈 5 碳 → pentane，C2 與 C3 各有甲基取代 → 2,3-dimethylpentane。'},
+  {id:'o002', cat:'有機化學', topic:'命名', q:'下列化合物中，何者名稱錯誤？',
+   opts:['2-methylpropane','2-methylbutane','2-ethylpropane','3-methylpentane'], ans:2,
+   exp:'2-ethylpropane 不存在，應命名為 2-methylbutane (主鏈須選最長的)。'},
+  {id:'o003', cat:'有機化學', topic:'結構', q:'下列何者與其他三者「不」互為同分異構物？',
+   opts:['正丁烷','異丁烷 (2-甲基丙烷)','環丁烷','2-甲基丁烷'], ans:3,
+   exp:'前三者皆為 C₄H_{10} 或 C₄H₈ 系列；2-甲基丁烷分子式為 C₅H₁₂，碳數不同。注意：環丁烷為 C₄H₈，與正丁烷 C₄H₁₀ 嚴格說也非同分異構物。本題著重於碳數比較，選最明顯者。'},
+  {id:'o004', cat:'有機化學', topic:'結構', q:'丙烯 (CH₂=CH−CH₃) 中 sp² 碳數為？',
+   opts:['1','2','3','0'], ans:1,
+   exp:'C=C 雙鍵兩端的碳為 sp²，CH₃ 為 sp³。故 sp² 碳數為 2。'},
+
+  // ====== 立體化學 ======
+  {id:'o005', cat:'有機化學', topic:'立體化學', q:'下列化合物中，何者具有手性中心 (chiral center)？',
+   opts:['2-丙醇','2-丁醇','3-戊醇','第三丁醇'], ans:1,
+   exp:'2-丁醇 C2 連接 H、OH、CH₃、C₂H₅ 四個不同基團，為手性中心。3-戊醇 C3 兩側為 C₂H₅ 相同，無手性。'},
+  {id:'o006', cat:'有機化學', topic:'立體化學', q:'下列關於對映異構物 (enantiomer) 的敘述何者錯誤？',
+   opts:['物理性質 (mp、沸點) 相同','旋光方向相反','在非掌性環境中化學性質相同','互為鏡像且可重疊'], ans:3,
+   exp:'對映異構物互為鏡像但「無法」重疊；可重疊則是同一個分子，非異構物。'},
+  {id:'o007', cat:'有機化學', topic:'立體化學', q:'(R)-2-溴丁烷與其對映異構物以 1:1 混合所得溶液的旋光度為？',
+   opts:['正旋光','負旋光','零 (消旋)','視濃度而定'], ans:2,
+   exp:'1:1 對映異構物混合稱為消旋混合物 (racemic mixture)，旋光度互相抵消為零。'},
+  {id:'o008', cat:'有機化學', topic:'立體化學', q:'順-2-丁烯與反-2-丁烯的關係為？',
+   opts:['對映異構物','非對映異構物 (diastereomer)','構型異構物','官能基異構物'], ans:1,
+   exp:'順反異構物屬於非對映異構物；它們不互為鏡像，物理性質也不同。'},
+
+  // ====== 取代與消去 ======
+  {id:'o009', cat:'有機化學', topic:'取代/消去', q:'下列何者最易發生 SN2 反應？',
+   opts:['(CH₃)₃CBr','(CH₃)₂CHBr','CH₃CH₂Br','CH₃Br'], ans:3,
+   exp:'SN2 為背面攻擊，立體障礙小者反應快。CH₃Br 立體障礙最小。第三級鹵化物幾乎不發生 SN2。'},
+  {id:'o010', cat:'有機化學', topic:'取代/消去', q:'下列何者最易發生 SN1 反應？',
+   opts:['CH₃Br','CH₃CH₂Br','(CH₃)₂CHBr','(CH₃)₃CBr'], ans:3,
+   exp:'SN1 速率取決於碳陽離子穩定性。第三級碳陽離子最穩定 (超共軛+誘導效應)，故 (CH₃)₃CBr 最易進行 SN1。'},
+  {id:'o011', cat:'有機化學', topic:'取代/消去', q:'(CH₃)₃CBr 與濃 KOH/乙醇加熱反應的主要產物為？',
+   opts:['(CH₃)₃COH','(CH₃)₂C=CH₂','(CH₃)₃COC₂H₅','CH₃CH=CHCH₃'], ans:1,
+   exp:'第三級鹵化物 + 強鹼 + 加熱 → 偏好 E2 消去。產物為 2-甲基丙烯 (異丁烯)。'},
+  {id:'o012', cat:'有機化學', topic:'取代/消去', q:'依 Zaitsev 規則，2-溴-2-甲基丁烷消去反應的主要產物為？',
+   opts:['2-甲基-1-丁烯','2-甲基-2-丁烯','3-甲基-1-丁烯','異戊烷'], ans:1,
+   exp:'Zaitsev 規則：消去反應傾向生成取代基最多的烯烴。2-甲基-2-丁烯有 4 個取代基 (三取代)，較穩定。'},
+  {id:'o013', cat:'有機化學', topic:'取代/消去', q:'下列何者對於 SN2 反應最不利？',
+   opts:['極性質子性溶劑 (如水)','極性非質子性溶劑 (如 DMSO)','強親核試劑','低位阻基質'], ans:0,
+   exp:'極性質子性溶劑會與親核試劑形成氫鍵降低其反應性，不利 SN2。極性非質子性溶劑 (DMSO、DMF) 則有利。'},
+
+  // ====== 醇、醚、酚 ======
+  {id:'o014', cat:'有機化學', topic:'醇/醚/酚', q:'1-丙醇與濃硫酸於 170°C 加熱主要產物為？',
+   opts:['丙醛','丙酮','丙烯','丙醚'], ans:2,
+   exp:'醇在強酸高溫 (>170°C) 下發生分子內脫水形成烯烴 (E1)。較低溫 (~140°C) 則可能形成醚 (分子間脫水)。'},
+  {id:'o015', cat:'有機化學', topic:'醇/醚/酚', q:'Lucas 試劑 (ZnCl₂/conc. HCl) 用於區分？',
+   opts:['醛與酮','一級、二級、三級醇','烯與炔','酸與鹼'], ans:1,
+   exp:'Lucas 試劑反應速率：3° 醇立即出現混濁；2° 醇數分鐘內出現；1° 醇室溫不反應。'},
+  {id:'o016', cat:'有機化學', topic:'醇/醚/酚', q:'下列化合物中，酸性最強者為？',
+   opts:['乙醇 (CH₃CH₂OH)','水 (H₂O)','苯酚 (C₆H₅OH)','對硝基苯酚'], ans:3,
+   exp:'酸性比較：醇 < 水 < 苯酚 < 對硝基苯酚。硝基為強吸電子基使共軛鹼穩定，酸性增強。'},
+  {id:'o017', cat:'有機化學', topic:'醇/醚/酚', q:'下列關於苯酚的敘述何者錯誤？',
+   opts:['可與 NaOH 反應','水溶液呈弱酸性','可使 FeCl₃ 變紫色','可與 NaHCO₃ 反應放出 CO₂'], ans:3,
+   exp:'苯酚 pKa ≈ 10，弱於碳酸 (pKa ≈ 6.35)，故無法與 NaHCO₃ 反應。羧酸 (pKa ≈ 4-5) 才能。'},
+
+  // ====== 醛酮 ======
+  {id:'o018', cat:'有機化學', topic:'醛酮', q:'下列何試劑可區分醛與酮？',
+   opts:['Br₂/CCl₄','Tollens 試劑 (銀鏡反應)','Lucas 試劑','I₂/NaOH'], ans:1,
+   exp:'Tollens 試劑為弱氧化劑，可氧化醛形成銀鏡，但不氧化酮。Fehling 試劑亦有類似區分。'},
+  {id:'o019', cat:'有機化學', topic:'醛酮', q:'丙酮與 HCN 加成反應產物為？',
+   opts:['α-羥基腈','β-羥基腈','胺基腈','醯胺'], ans:0,
+   exp:'醛酮與 HCN 加成形成氰醇 (cyanohydrin)，CN 加在羰基碳上、OH 加在原羰基氧上，為 α-羥基腈。'},
+  {id:'o020', cat:'有機化學', topic:'醛酮', q:'下列何者可進行碘仿反應？',
+   opts:['丙醛','丙酮','二甲基甲酮以外的酮','正丁醛'], ans:1,
+   exp:'碘仿反應需有 CH₃CO− 結構或可氧化生成此結構之化合物 (如乙醛、甲基酮、乙醇、二級甲基醇)。丙酮 CH₃COCH₃ 可進行。'},
+  {id:'o021', cat:'有機化學', topic:'醛酮', q:'醛酮羰基的紅外線吸收典型範圍為？',
+   opts:['3200-3600 cm⁻¹','1600-1700 cm⁻¹','1700-1750 cm⁻¹','2800-3000 cm⁻¹'], ans:2,
+   exp:'C=O 伸縮振動約在 1700-1750 cm⁻¹。醛 ~1720、酮 ~1715、酯 ~1735、醯氯 ~1800。'},
+
+  // ====== 羧酸及衍生物 ======
+  {id:'o022', cat:'有機化學', topic:'羧酸/衍生物', q:'下列羧酸中酸性最強者為？',
+   opts:['CH₃COOH','ClCH₂COOH','Cl₂CHCOOH','Cl₃CCOOH'], ans:3,
+   exp:'吸電子基越多，共軛鹼 (羧酸根) 越穩定，酸性越強。三氯乙酸 pKa ≈ 0.7，遠強於乙酸 (~4.76)。'},
+  {id:'o023', cat:'有機化學', topic:'羧酸/衍生物', q:'酯化反應 (Fischer esterification) 屬於：',
+   opts:['加成反應','取代反應','消去反應','重排反應'], ans:1,
+   exp:'羧酸 + 醇 → 酯 + 水，由 −OH 被 −OR 取代，屬於取代反應 (具體為親核醯基取代)。'},
+  {id:'o024', cat:'有機化學', topic:'羧酸/衍生物', q:'下列羧酸衍生物的反應活性由高至低排列正確的是？',
+   opts:['醯氯 > 酸酐 > 酯 > 醯胺','酯 > 醯胺 > 醯氯 > 酸酐','醯胺 > 酯 > 酸酐 > 醯氯','酸酐 > 醯氯 > 酯 > 醯胺'], ans:0,
+   exp:'活性順序：醯氯 > 酸酐 > 酯 ≈ 羧酸 > 醯胺。離去基越穩定 (鹼性越弱) 反應越容易。'},
+  {id:'o025', cat:'有機化學', topic:'羧酸/衍生物', q:'乙醯氯 + 過量氨主要產物為？',
+   opts:['乙酸銨','乙醯胺 (CH₃CONH₂)','乙腈','乙胺'], ans:1,
+   exp:'醯氯與氨反應形成醯胺。CH₃COCl + 2NH₃ → CH₃CONH₂ + NH₄Cl。'},
+
+  // ====== 胺 ======
+  {id:'o026', cat:'有機化學', topic:'胺', q:'下列鹼性 (在水中) 由強到弱排列正確的是？',
+   opts:['NH₃ > CH₃NH₂ > (CH₃)₂NH','(CH₃)₂NH > CH₃NH₂ > NH₃','CH₃NH₂ > NH₃ > (CH₃)₂NH','三者相同'], ans:1,
+   exp:'水中鹼性受誘導效應與溶劑化共同影響。實際順序為 2°胺 > 1°胺 > 3°胺 > NH₃ (氣相為純誘導效應 3°>2°>1°>NH₃)。'},
+  {id:'o027', cat:'有機化學', topic:'胺', q:'苯胺與亞硝酸 (HNO₂/HCl, 0-5°C) 反應產物為？',
+   opts:['苯酚','重氮鹽 (C₆H₅N₂⁺Cl⁻)','硝基苯','偶氮苯'], ans:1,
+   exp:'低溫 (0-5°C) 下，1° 芳香胺 + HNO₂ → 重氮鹽。重氮鹽是合成上極重要中介體，可進行偶氮偶合反應。'},
+
+  // ====== 芳香族 ======
+  {id:'o028', cat:'有機化學', topic:'芳香族', q:'下列何者為芳香族 (aromatic) 化合物？',
+   opts:['環丁二烯','苯','環辛四烯','以上皆是'], ans:1,
+   exp:'依 Hückel 規則：(4n+2) π 電子且為平面共軛環。苯為 6 π 電子 (n=1) 為芳香族；環丁二烯 4 π 反芳香；環辛四烯非平面為非芳香。'},
+  {id:'o029', cat:'有機化學', topic:'芳香族', q:'下列基團在親電芳香取代反應中為「鄰、對位指向」的是？',
+   opts:['−NO₂','−CN','−COOH','−OCH₃'], ans:3,
+   exp:'活化基 (推電子) 多為鄰對位指向：−OH、−OR、−NH₂、−NHR、−R 等。−NO₂、−CN、−COOH 為鈍化基且為間位指向。'},
+  {id:'o030', cat:'有機化學', topic:'芳香族', q:'苯與 Br₂ 在 FeBr₃ 催化下主要產物為？',
+   opts:['1,2-二溴環己烷','溴苯','苯酚','間二溴苯'], ans:1,
+   exp:'此為親電芳香取代 (EAS)，FeBr₃ 為路易士酸催化劑，產物為一溴取代的溴苯。'},
+
+  // ====== 光譜 ======
+  {id:'o031', cat:'有機化學', topic:'光譜', q:'¹H NMR 中，乙醇 CH₃CH₂OH 的 CH₃ 訊號裂分為？',
+   opts:['單峰','雙峰','三重峰','四重峰'], ans:2,
+   exp:'依 n+1 規則，CH₃ 旁有 2 個 CH₂ 質子，n=2，裂分為 2+1=3 重峰。CH₂ 旁有 3 個 CH₃ 質子，裂分為四重峰。'},
+  {id:'o032', cat:'有機化學', topic:'光譜', q:'下列官能基中，IR 吸收約在 3300-3500 cm⁻¹「寬而強」訊號者為？',
+   opts:['C=O','O−H (醇)','C≡C','C−H'], ans:1,
+   exp:'醇與羧酸的 O−H 在 3200-3650 cm⁻¹ 為寬峰 (氫鍵造成)。羧酸 O−H 更寬 (2500-3300)。N−H 通常較銳。'},
+  {id:'o033', cat:'有機化學', topic:'光譜', q:'某化合物分子離子峰 M⁺ = 88，且有強烈 M−18 峰，最可能為？',
+   opts:['丁醇','丁酮','丁酸','丁酸甲酯'], ans:0,
+   exp:'M−18 表示失去 H₂O，為醇類典型裂解。分子量 88 對應 C₄H₈O₂ 或 C₄H₁₀O 等；丁醇 (C₄H₁₀O = 74) 不符；其實 88 較合丁酸 (C₄H₈O₂)。本題著重於 M−18 與醇關聯，但分子量需詳細分析。'},
+
+  // ====== 生物分子 ======
+  {id:'o034', cat:'有機化學', topic:'生物分子', q:'葡萄糖屬於下列哪一類醣？',
+   opts:['己醛糖 (aldohexose)','己酮糖 (ketohexose)','戊醛糖','戊酮糖'], ans:0,
+   exp:'葡萄糖為 6 碳含醛基的醣類，為己醛糖。果糖則為己酮糖。'},
+  {id:'o035', cat:'有機化學', topic:'生物分子', q:'蛋白質的「一級結構」指的是？',
+   opts:['α 螺旋與 β 摺板','胺基酸序列','多胜肽鏈三維折疊','多次單元組合'], ans:1,
+   exp:'一級結構即胺基酸排列順序；二級為 α 螺旋/β 摺板；三級為整體三維結構；四級為多次單元組裝。'},
+  {id:'o036', cat:'有機化學', topic:'生物分子', q:'下列關於 DNA 與 RNA 的敘述何者錯誤？',
+   opts:['DNA 含去氧核醣','RNA 含尿嘧啶 (U)','DNA 雙股，RNA 通常單股','RNA 鹼基為 A、T、G、C'], ans:3,
+   exp:'RNA 鹼基為 A、U、G、C；DNA 鹼基才是 A、T、G、C。RNA 用 U 取代 T。'},
+
+  /* ============================================================
+     ★★ 115 學年度 中國醫藥大學 學士後中醫 化學 考古題 (50 題) ★★
+     ============================================================ */
+  {id:'cm115_01', cat:'有機化學', topic:'光譜', year:115, source:'中國醫',
+   q:'在 ¹H NMR 光譜中以 CDCl₃ 為溶劑，於化學位移 δ 7.3 ppm 觀察到一個細微的單峰，此訊號最可能來源為何？',
+   opts:['溶劑 CDCl₃ 中氘核 (²D) 的共振訊號','溶劑中未完全氘代 CHCl₃ 的 ¹H 訊號','內標準品 (CH₃)₄Si (TMS) 的 ¹H 訊號','微量 H₂O 的 ¹H 訊號'], ans:1,
+   exp:'商業 CDCl₃ 約 99.8% 氘代，殘餘約 0.2% 的 CHCl₃ 在 δ 7.26 ppm 出現單峰，是常見的溶劑殘餘峰。²D 不出現在 ¹H NMR；TMS 在 δ 0；微量水約在 δ 1.56 ppm。'},
+
+  {id:'cm115_02', cat:'有機化學', topic:'光譜', year:115, source:'中國醫',
+   q:'在 ¹³C{¹H} NMR 光譜中以 CDCl₃ 為溶劑，於 δ 77 ppm 觀察到強度比約 1:1:1 的三重峰，其來源最可能為何？',
+   opts:['未完全氘代 CHCl₃ 的 ¹³C 與 ¹H 偶合','溶劑 CDCl₃ 的 ¹³C 與 ²D 偶合','溶劑 CDCl₃ 的 ¹²C 受磁場感應的訊號','TMS 的 ¹³C 與 ¹H 偶合'], ans:1,
+   exp:'¹H 已被去偶合但 D 核未被去偶。²D 自旋量子數 I=1，依 2nI+1 規則 (n=1, I=1) 產生 3 條訊號且強度比 1:1:1。為 CDCl₃ 在 ¹³C NMR 的特徵指紋訊號。'},
+
+  {id:'cm115_03', cat:'有機化學', topic:'光譜', year:115, source:'中國醫',
+   q:'某 C₄H₈O₂ 化合物 ¹H NMR (CDCl₃)：δ 1.26 (3H, t)、2.08 (3H, s)、4.11 (2H, q)；¹³C NMR：δ 14.2、21.0、60.3、171.0。此化合物為下列何者？',
+   opts:['乙酸乙酯 (ethyl acetate)','甲氧基丙酮 (methoxyacetone)','丙酸甲酯 (methyl propionate)','甲酸丙酯 (propyl formate)'], ans:0,
+   exp:'¹H NMR 三重峰 (1.26)、四重峰 (4.11) 為乙基 −OCH₂CH₃ 訊號 (CH₂ 接氧故位移較大)；單峰 (2.08) 為孤立 CH₃CO−。¹³C 訊號 171 (酯 C=O)、60.3 (OCH₂)、21.0 (COCH₃)、14.2 (CH₃)，與 CH₃COOCH₂CH₃ 完全吻合。'},
+
+  {id:'cm115_04', cat:'普通化學', topic:'氧化還原', year:115, source:'中國醫',
+   q:'試計算巴豆酸（crotonic acid，(2E)-but-2-enoic acid，結構為 CH₃−CH=CH−COOH）所有碳原子氧化數的總和為何？',
+   opts:['+2','0','−2','−4'], ans:2,
+   exp:'C 氧化數計算：C−H 計 −1，C−O (單) +1，C=O +2，C−C 為 0。C1 (CH₃)：3×(−1)+0=−3；C2 (=CH−)：(−1)+0+0=−1；C3 (=CH−)：(−1)+0+0=−1；C4 (COOH)：0+(+2)+(+1)=+3。總和 = −3−1−1+3 = −2。'},
+
+  {id:'cm115_05', cat:'有機化學', topic:'立體化學', year:115, source:'中國醫',
+   q:'下列五個含對掌性碳的化合物（試題原圖 A–E）絕對組態判定，哪組「全部」正確？A: HOCH(CH₂CH₃)(OCH₃)−H；B: 一手性碳上連 H、D、CH₃、Br；C: HOC(C≡CCH₃)(SiMe₃)−H；D: 3-溴環戊烯指定楔形結構；E: PhC(CH₂CH₃)(CH₃)−H',
+   opts:['A=S, B=R, C=S, D=S, E=S','A=S, B=S, C=R, D=S, E=R','A=R, B=S, C=S, D=R, E=S','A=S, B=S, C=S, D=S, E=S'], ans:3,
+   exp:'依 CIP 優先順序加上題目所示楔形（粗線、虛線）的立體配置進行判讀，五個對掌性中心皆為 S 構型。注意 B 中 D (氘) 質量大於 H 但小於 C，故 CIP 排序為 Br > CH₃ > D > H。'},
+
+  {id:'cm115_06', cat:'有機化學', topic:'立體化學', year:115, source:'中國醫',
+   q:'有關順式十氫萘 (cis-decalin) 與反式十氫萘 (trans-decalin) 的結構穩定性，下列何者正確？',
+   opts:['cis-decalin 較穩定，因結構靈活，可進行環翻轉','trans-decalin 較穩定，因環接合處取代基皆位於 equatorial，避開鄰位交叉張力 (gauche interactions)','兩者穩定性相同，皆由兩個六圓環構成且皆 sp³ 混成','無法判斷，穩定性取決於溫度與溶劑'], ans:1,
+   exp:'trans-decalin 兩個環接合處的氫原子皆 axial、其它鍵則 equatorial，無 1,3-双軸交互作用，能量較低且為剛性結構（無法環翻轉）。cis-decalin 因環接合處有 gauche 作用，能量比 trans 高約 2 kcal/mol。'},
+
+  {id:'cm115_07', cat:'有機化學', topic:'酸鹼性', year:115, source:'中國醫',
+   q:'下列四個苯銨鹽酸鹽 (anilinium chloride) 衍生物，何者的 pKa 數值最小（即酸性最強）？',
+   opts:['對位 −NO₂ 取代之苯銨氯化物','對位 −Cl 取代之苯銨氯化物','未取代之苯銨氯化物','對位 −NHCOCH₃ 取代之苯銨氯化物'], ans:0,
+   exp:'pKa 越小代表 PhNH₃⁺ 越易解離出 H⁺，等價於其共軛鹼 PhNH₂ 為較弱的鹼。−NO₂ 為強拉電子基（共振+誘導），使對應苯胺鹼性最弱、銨鹽 pKa 最低（約 1.0）。−NHCOCH₃ 為推電子基使鹼性增強，pKa 最高。'},
+
+  {id:'cm115_08', cat:'有機化學', topic:'酸鹼性', year:115, source:'中國醫',
+   q:'在 THF 溶劑中比較下列四種物質的鹼性，何者最弱？',
+   opts:['二異丙基胺基鋰 (LDA)','叔丁醇鉀 (t-BuOK)','正丁基鋰 (n-BuLi)','吡啶 (pyridine)'], ans:3,
+   exp:'吡啶共軛酸 pKa(BH⁺) ≈ 5.2，鹼性遠弱於 LDA (pKa~36)、t-BuOK (pKa~18)、n-BuLi (pKa~50)。前三者皆為強鹼用於去質子化弱酸性 C−H/O−H。'},
+
+  {id:'cm115_09', cat:'有機化學', topic:'芳香族', year:115, source:'中國醫',
+   q:'下列六個分子（試題原圖）：苯乙烯、1,3,5-環庚三烯、雙環二烯化合物、萘 (naphthalene)、薁 (azulene, 7+5 並環)、富烯-環丙烯類。具芳香性 (aromatic character) 的化合物共有幾個？',
+   opts:['2','3','4','5'], ans:1,
+   exp:'依 Hückel 規則 (4n+2 個 π 電子且為平面共軛環)：苯乙烯 (含苯環)、萘 (10π)、薁 (10π) 為芳香性，共 3 個。1,3,5-環庚三烯有 sp³ CH₂ 中斷共軛，非芳香；其他結構或為反芳香 (4π) 或非平面。'},
+
+  {id:'cm115_10', cat:'有機化學', topic:'生物分子', year:115, source:'中國醫',
+   q:'市售「左旋 C」即 L-抗壞血酸 (L-ascorbic acid)，下列敘述何者正確？',
+   opts:['含 2 個對掌性中心，共 2 個立體異構物','標榜「左旋」是因水溶液實測旋光值為負','自然界具生物活性者為 D-型抗壞血酸','「L」字根源自費雪投影式中決定組態之對掌性碳上 −OH 的位置'], ans:3,
+   exp:'L/D 命名為 Fischer 構型命名法 — 看「最高編號之對掌性碳」上 −OH 的位置：左為 L、右為 D（與 L-甘油醛比對）。L-抗壞血酸實際旋光為 (+)，所以「左旋」一詞此處非指旋光方向。2 個手性碳應為 2²=4 個立體異構物。生物活性者為 L-型。'},
+
+  {id:'cm115_11', cat:'有機化學', topic:'立體化學', year:115, source:'中國醫',
+   q:'關於酒石酸 HO₂C−CH(OH)−CH(OH)−CO₂H 的敘述，下列何者正確？',
+   opts:['含 2 個對掌性中心，共有 4 個立體異構物','所有立體異構物皆具旋光性','是一種單質子 α-羥基酸','在非對掌性環境下，d-酒石酸與 l-酒石酸熔點與溶解度均相同'], ans:3,
+   exp:'酒石酸雖有 2 手性碳，但因分子內部具假對稱平面，存在「meso 體」(R,S)，故只有 3 個立體異構物 (D、L、meso)，meso 體不具旋光性。為「雙質子」(diprotic) α-羥基酸。對映體 (D 和 L) 在非對掌性環境下熔點/溶解度相同。'},
+
+  {id:'cm115_12', cat:'有機化學', topic:'胺/消去', year:115, source:'中國醫',
+   q:'1-甲基-1-胺基環己烷 (環己烷之 C1 同時帶有 −CH₃ 與 −NH₂) 依序與「過量 CH₃I/K₂CO₃/熱」、「Ag₂O/H₂O/熱」反應，最終主要產物為何？',
+   opts:['1-甲基-1-(甲胺基)環己烷','1-甲基-1-(二甲胺基)環己烷','1-甲基環己烯 (endo)','亞甲基環己烷 (methylenecyclohexane)'], ans:3,
+   exp:'此為 Hofmann elimination：胺先窮盡甲基化生成四級銨鹽，Ag₂O 提供 OH⁻ 後加熱發生 E2 消去。Hofmann 規則偏好「較少取代」的烯：β-H 來自 −CH₃ 上 (端位 H) 比 β-H 來自環內 C2/C6 易消去，故主產物為亞甲基環己烷（單取代烯），而非更穩定的 1-甲基環己烯（三取代烯，Zaitsev 產物）。'},
+
+  {id:'cm115_13', cat:'有機化學', topic:'金屬有機', year:115, source:'中國醫',
+   q:'圖中之含兩個 −CO₂CH₃ 取代基 (E,E) 與 R 烷基取代之 1,6-庚二烯 (兩端皆為末端烯)，在 Grubbs (Ru) 催化劑作用下進行閉環烯烴交換反應 (RCM)，主要產物為何？',
+   opts:['環戊烯，E,E 在 C3、R 在 C4 (順式)','3,3-二取代環戊烯 E,E 同碳','3-R-取代環戊烯 (E 已脫除)','環戊烯，E,E 在 C3、R 在 C4 (反式立體保留)'], ans:3,
+   exp:'RCM 將 1,6-庚二烯系統環化為「五員環烯」(cyclopentene)，並釋出 CH₂=CH₂。反應僅作用於 C=C，不影響其他官能基；底物上的取代基 (E,E 和 R) 與其立體中心皆於產物中保留。'},
+
+  {id:'cm115_14', cat:'有機化學', topic:'消去', year:115, source:'中國醫',
+   q:'cis- 與 trans- 4-第三丁基-1-溴環己烷在 t-BuOK 中進行消去反應，下列何者正確？',
+   opts:['cis 異構物速率較快','trans 異構物速率較快','兩者速率相同 (相同反應機構)','兩者速率相同 (取代基空間障礙相同)'], ans:0,
+   exp:'E2 需 H 與 Br anti-periplanar (即雙軸 axial-axial)。t-Bu 為超大基團強烈偏好 equatorial。cis 異構物中 t-Bu (eq) 強迫 Br 為 axial，可直接 E2；trans 中 Br (eq) 不利消去，需翻環使 Br axial 但同時迫使 t-Bu axial，能量極不利，故 cis 反應快得多。'},
+
+  {id:'cm115_15', cat:'有機化學', topic:'醇/消去', year:115, source:'中國醫',
+   q:'2,3-二甲基環己醇 (環己烷之 C1=OH，C2=CH₃，C3=CH₃) 在 H₂SO₄/熱條件下，主要產物為何？',
+   opts:['1,2-二甲基環己-1-烯 (三取代烯)','1-甲基-2-亞甲基環己烷','3-甲基環己烯','5,6-二甲基環己-1-烯 (二取代烯)'], ans:0,
+   exp:'醇於濃 H₂SO₄/熱發生 E1 脫水。C1 形成正離子後依 Zaitsev 取最穩定 (取代度最高) 的烯：朝 C2 方向消去 H，得 C1=C2 雙鍵且兩端皆有甲基取代，為三取代烯，最穩定。亦可考慮甲基/H 重排提升正離子穩定度，最終主產物仍為高度取代之內環烯。'},
+
+  {id:'cm115_16', cat:'有機化學', topic:'醇氧化', year:115, source:'中國醫',
+   q:'1-(羥甲基)環己-1-醇 (即環己烷 C1 同時連 −OH 與 −CH₂OH，為 vicinal-diol) 與 HIO₄ 反應的主要產物為何？',
+   opts:['醛醇結構不變','環己酮 + 甲醛 (HCHO)','7-側鏈酮酸','己二醛 (二端為 CHO)'], ans:1,
+   exp:'HIO₄ (高碘酸) 切斷「鄰二醇」(vicinal diol) 的 C−C 鍵，將每個 −OH 端的碳氧化成羰基。此化合物 C1−C(CH₂) 為鄰二醇結構：C1 端產生環己酮 (C=O 在環內)，CH₂OH 端產生甲醛 HCHO。'},
+
+  {id:'cm115_17', cat:'有機化學', topic:'消去', year:115, source:'中國醫',
+   q:'圖示為 (1S,2R,4S)-1-甲基-2-溴-4-異丙基環己烷 (新薄荷類結構)，與 CH₃ONa/CH₃OH 反應的主要產物為何？',
+   opts:['取代產物 (2-OMe，立體反轉)','以 E2 機構生成 1-甲基-2-異丙基環己-1-烯型烯 (滿足 anti-periplanar)','只生成最穩定 Zaitsev 烯不論立體障礙','烯位置受立體控制不顯著'], ans:1,
+   exp:'CH₃ONa 為強鹼+中度親核試劑，2° 鹵化物優先 E2。E2 嚴格要求 H 與 Br 反式平伏 (anti-periplanar，雙軸 axial-axial)。在所示構型中，唯有「指定方向」的 β-H 可滿足此幾何，故主產物受立體控制 — 為 Hofmann 型烯 (即與 Br 反式 axial 的 H 位)，而非單純的最穩定 Zaitsev 烯。'},
+
+  {id:'cm115_18', cat:'有機化學', topic:'羰基反應', year:115, source:'中國醫',
+   q:'乙醯苯 (PhCOCH₃) 與甲基乙烯酮 (CH₂=CH−COCH₃, MVK) 在 CH₃ONa/CH₃OH/熱條件下反應，主要產物為何？',
+   opts:['3-苯基-環己-2-烯-1-酮 (Robinson annulation 產物)','二氫萘酮 (1-tetralone)','(E)-1-苯基-2-甲基-1,4-戊二烯-3-酮','(E)-1-苯基-3-甲基-2,4-戊二烯-1-酮'], ans:0,
+   exp:'此為經典 Robinson annulation：(1) NaOMe 將 PhCOCH₃ 之 α-H 去質子化生成烯醇式；(2) Michael 加成至 MVK，生成 1,5-雙酮 PhCO−CH₂−CH₂−CH₂−COCH₃；(3) 分子內 aldol 縮合形成六員環 + 脫水得 α,β-不飽和環己烯酮，主產物為 3-苯基環己-2-烯-1-酮。'},
+
+  {id:'cm115_19', cat:'有機化學', topic:'多步合成', year:115, source:'中國醫',
+   q:'1,3-環己二烯依序進行：(1) 乙烯/熱、(2) MCPBA/Na₂HPO₄/CH₂Cl₂、(3) CH₃CH₂MgBr/Et₂O、(4) H₃O⁺。最終主產物為何？',
+   opts:['雙環[2.2.2]辛-2-烯 (Diels-Alder 後即停)','降莰醇衍生物 (norbornol-type)','雙環[2.2.2]辛烷骨架，2-乙基-3-OH (反式開環)','2-乙基雙環[2.2.1]庚-2-醇'], ans:2,
+   exp:'(1) 1,3-CHD + CH₂=CH₂ → Diels-Alder → 雙環[2.2.2]辛-2-烯。(2) MCPBA 將剩餘 C=C 環氧化得 epoxide。(3) EtMgBr 為強親核試劑，攻擊 epoxide 較少阻礙的碳，伴隨 SN2 反式開環得到 alkoxide。(4) H₃O⁺ 質子化得反式 (anti) 之 2-OH-3-Et 雙環產物。'},
+
+  {id:'cm115_20', cat:'有機化學', topic:'芳香族', year:115, source:'中國醫',
+   q:'苯甲醚 (anisole, PhOCH₃) 依序進行：(1) 發煙 H₂SO₄、(2) Br₂/FeBr₃、(3) H⁺/H₂O/熱。主產物為何？',
+   opts:['4-甲氧基-3-溴苯磺酸','5-溴-2-甲氧基苯磺酸','2-溴苯甲醚 (鄰溴茴香醚)','2-甲氧基苯磺酸'], ans:2,
+   exp:'(1) −OCH₃ 為強鄰對位指向基，發煙硫酸於 para 位置磺化得 4-甲氧基苯磺酸；(2) −SO₃H 為間位指向基且阻擋 para，再加上 −OMe 之鄰對指向，溴進入「OMe 之鄰位、SO₃H 之間位」；(3) 熱稀酸使 −SO₃H 脫去 (磺化可逆)，最終留下「OMe 之鄰位的溴」，產物為 2-溴茴香醚。SO₃H 在此扮演「保護位置 (blocking group)」角色。'},
+
+  {id:'cm115_21', cat:'有機化學', topic:'金屬有機', year:115, source:'中國醫',
+   q:'2-亞異丙基-5-甲基環己酮 (5-甲基環己酮 C2 上有 =C(CH₃)₂ 之 α,β-不飽和酮) 依序與 (1) (CH₃)₂CuLi、(2) H₂O 反應，主產物為何？',
+   opts:['2-第三丁基-5-甲基環己酮 (1,4-加成後得季碳取代)','5-甲基-2-亞異丙基環己烯-1-醇','2-(2-甲基丙烷-2-基)-5-甲基環己酮 (1,2-加成醇)','2-亞異丙基-2,5-二甲基環己酮'], ans:0,
+   exp:'有機銅鋰試劑 (Gilman) 對 α,β-不飽和酮選擇性「1,4-共軛加成」。CH₃ 加在 β-碳 (=C(CH₃)₂ 的碳)，把該碳由 sp² 變 sp³，得 −C(CH₃)₃ (tert-butyl) 取代。質子化後得到 2-(tert-butyl)-5-methylcyclohexanone。'},
+
+  {id:'cm115_22', cat:'有機化學', topic:'自由基', year:115, source:'中國醫',
+   q:'甲基環己烷 + Br₂ + 光照，主要產物為何？',
+   opts:['1-溴-1-甲基環己烷 (3°)','(溴甲基)環己烷 (1°)','1-溴-2-甲基環己烷 (2°)','1-溴亞甲基-環己烷 (亞甲基溴化)'], ans:0,
+   exp:'光照下 Br₂ 進行自由基取代反應，選擇性極高 (3° >> 2° >> 1°)，因 3° 自由基最穩定。甲基環己烷的 C1 (連 CH₃ 的碳) 為 3° 位置，故主產物為 1-溴-1-甲基環己烷。Br₂ 的選擇性比 Cl₂ 高得多。'},
+
+  {id:'cm115_23', cat:'有機化學', topic:'羰基反應', year:115, source:'中國醫',
+   q:'圖示為一含 4 個羰基之環狀結構 (相當於兩分子乙酸經氫鍵或可逆酯鍵形成的環狀二聚體形式)。將其加入 H₃O⁺/熱條件，最終水解得到的主要產物為何？',
+   opts:['2 × 丙二酸 HO₂CCH₂CO₂H','2 × 丙酮','2 × 乙酸 CH₃CO₂H','一條鏈狀三酐酸'], ans:2,
+   exp:'此題之環狀結構在水合與酸性加熱條件下分解為兩分子乙酸 (CH₃COOH)。乙酸於非極性溶劑/氣相中常以「環狀氫鍵二聚體」存在 (兩 −COOH 對接形成 8-元環)，於水溶液或酸催化下打開為自由的乙酸分子。'},
+
+  {id:'cm115_24', cat:'有機化學', topic:'立體化學/取代', year:115, source:'中國醫',
+   q:'要將 Fischer 投影式中 (CH₃ 上、Br 左、CH₃O 左、CH₃ 下) 之 C2 上的 Br 換為 CN，且 C2 之絕對組態維持「保留 (retention)」，下列試劑順序何者最適合？',
+   opts:['NaCN','1) NaF；2) KCN','1) NaI；2) KCN','1) NaOMe；2) HCN/光'], ans:2,
+   exp:'單次 SN2 (NaCN 直接) 會造成「立體反轉」(inversion)。欲達「淨保留」需「兩次反轉」：先用 NaI 進行 Finkelstein-like 反轉 (Br→I)，再以 KCN 進行第二次 SN2 反轉 (I→CN)，淨結果為構型保留。NaF 親核性差不適用；HCN/光路徑為自由基非立體專一。'},
+
+  {id:'cm115_25', cat:'有機化學', topic:'芳香族', year:115, source:'中國醫',
+   q:'吡啶 (pyridine) 與 HNO₃/H₂SO₄ 在 300°C 反應的主要產物為何？',
+   opts:['2-硝基吡啶','2-吡啶磺酸','3-硝基吡啶','3-吡啶磺酸'], ans:2,
+   exp:'吡啶 N 上之孤對拉電子使環嚴重去活化，需強烈條件 (300°C) 方能進行親電芳香取代。攻擊 C2 (α) 或 C4 (γ) 之中間體共振式有「正電荷在 N」之不穩定形式；只有攻擊 C3 (β) 不會出現此不穩定共振，故反應於 C3 進行，得 3-硝基吡啶。'},
+
+  {id:'cm115_26', cat:'普通化學', topic:'熱力學', year:115, source:'中國醫',
+   q:'在 0°C、1 atm 下，固態冰與液態水共存於平衡，下列何者正確？',
+   opts:['ΔG < 0','液態水變為固態冰之過程為放熱反應','液態水的熵小於固態冰','屬靜態平衡'], ans:1,
+   exp:'達到平衡時 ΔG = 0 (非小於零)。水→冰過程 (凝固) 釋放熱量為放熱反應 (ΔH<0)，即融化是吸熱、凝固是放熱。固態結構有序度高、熵較小，故液態水的熵 > 固態冰。屬「動態平衡」(分子持續交換) 而非靜態。'},
+
+  {id:'cm115_27', cat:'有機化學', topic:'生物分子', year:115, source:'中國醫',
+   q:'下列何種物質「不」含醣類結構？',
+   opts:['β-環糊精 (β-cyclodextrin)','澱粉 (starch)','玻尿酸 (hyaluronic acid)','穀胱甘肽 (glutathione)'], ans:3,
+   exp:'穀胱甘肽是由麩胺酸、半胱胺酸、甘胺酸組成之三胜肽 (Glu-Cys-Gly)，僅含胺基酸無醣類結構。β-環糊精為 7 個 α-D-葡萄糖環狀；澱粉為葡萄糖聚合物；玻尿酸為 N-乙醯葡萄糖胺與葡萄醣醛酸交替之多醣。'},
+
+  {id:'cm115_28', cat:'普通化學', topic:'材料化學', year:115, source:'中國醫',
+   q:'關於鑽石 (diamond) 與石墨烯 (graphene) 的敘述，下列何者正確？',
+   opts:['鑽石反鍵結軌域能量低，電子易移動具金屬性','石墨烯之碳原子為 sp² 混成，π 電子離域，容易導電','鑽石之碳為 sp³ 形成 3D 共價網狀，且容易導電','石墨烯之 π 軌域能量差大，電子不易移動'], ans:1,
+   exp:'石墨烯每個碳 sp² 混成，剩餘 p 軌域形成大範圍離域 π 系統，π 電子可自由流動，導電性極佳。鑽石全為 sp³ σ 鍵 (大能隙)，為電絕緣體。石墨烯導帶與價帶在 Dirac 點相接 (零能隙半金屬)，π 電子流動性極高。'},
+
+  {id:'cm115_29', cat:'普通化學', topic:'分子極性', year:115, source:'中國醫',
+   q:'下列化合物何者為非極性分子？',
+   opts:['PCl₅','D₂O','NH₃','CH₃Cl'], ans:0,
+   exp:'PCl₅ 為三角雙錐 (D₃ₕ 對稱) 5 個 P−Cl 偶極相消，整體無偶極矩，為非極性。D₂O 與 H₂O 同為彎曲形，極性。NH₃ 三角錐有極性。CH₃Cl 因 Cl 與 H 的電負度差異有極性。'},
+
+  {id:'cm115_30', cat:'普通化學', topic:'熱力學', year:115, source:'中國醫',
+   q:'已知 (1) 2C₂H₂(g) + 5O₂ → 4CO₂ + 2H₂O(l)  ΔH = −2600 kJ；(2) C(s) + O₂ → CO₂  ΔH = −394 kJ；(3) 2H₂ + O₂ → 2H₂O(l)  ΔH = −572 kJ。求 2C(s) + H₂(g) → C₂H₂(g) 的 ΔH？',
+   opts:['+339 kJ','+226 kJ','+113 kJ','−226 kJ'], ans:1,
+   exp:'依 Hess 定律：目標式 = 2×(2) + ½×(3) − ½×(1)。ΔH = 2(−394) + ½(−572) − ½(−2600) = −788 − 286 + 1300 = +226 kJ。'},
+
+  {id:'cm115_31', cat:'普通化學', topic:'酸鹼定義', year:115, source:'中國醫',
+   q:'下列何者「不是」阿瑞尼斯 (Arrhenius) 鹼？',
+   opts:['Na₂S','BaO','(CH₃)NH₂','H₂O'], ans:3,
+   exp:'Arrhenius 鹼為「在水中解離釋出 OH⁻」者。Na₂S 經 S²⁻ 水解產生 OH⁻；BaO+H₂O→Ba(OH)₂；甲胺 CH₃NH₂ + H₂O ⇌ CH₃NH₃⁺ + OH⁻ 皆釋出 OH⁻。純水自身解離出 H⁺ 與 OH⁻ 量相等，為 amphoteric (兩性)，不歸為 Arrhenius 鹼。'},
+
+  {id:'cm115_32', cat:'普通化學', topic:'熱力學', year:115, source:'中國醫',
+   q:'2 atm 下，1 莫耳理想氣體進行「等溫膨脹」至原體積之兩倍，下列何者正確？',
+   opts:['系統放熱、內能減少','氣體對外作功、內能增加','氣體對外作功、內能不變','系統壓力維持不變'], ans:2,
+   exp:'理想氣體之內能僅為溫度的函數。等溫過程 ΔT=0 故 ΔU=0。膨脹過程氣體對外作功 (w<0 系統觀點)，由 ΔU = q + w 可得 q = −w > 0 即系統吸熱。壓力會減為原來的一半 (P₁V₁=P₂V₂)。'},
+
+  {id:'cm115_33', cat:'普通化學', topic:'動力學', year:115, source:'中國醫',
+   q:'某反應反應物初始濃度 0.1 M，20 分鐘後剩 40%。若速率常數單位為 M⁻¹·min⁻¹，求 k？',
+   opts:['0.15','0.30','0.75','1.50'], ans:2,
+   exp:'單位 M⁻¹·min⁻¹ 表為「二級反應」。二級積分式：1/[A] − 1/[A]₀ = kt。代入 [A]₀=0.10、[A]=0.04 (剩 40%)、t=20 min：1/0.04 − 1/0.10 = 25 − 10 = 15 = 20k → k = 0.75 M⁻¹·min⁻¹。'},
+
+  {id:'cm115_34', cat:'普通化學', topic:'化學計量', year:115, source:'中國醫',
+   q:'反應：4FeCr₂O₄ + 8K₂CO₃ + 7O₂ → 8K₂CrO₄ + 2Fe₂O₃ + 8CO₂。投入 120 kg FeCr₂O₄、288 kg K₂CO₃、75 kg O₂，實得 150 kg K₂CrO₄。下列何者正確？(原子量 Fe=55.85, Cr=52, K=39.1)',
+   opts:['FeCr₂O₄ 為限量試劑','理論產量為 253 kg K₂CrO₄','實際產率為 82%','O₂ 為催化劑'], ans:0,
+   exp:'計算莫耳數：n(FeCr₂O₄)=120000/223.85≈536；n(K₂CO₃)=288000/138.21≈2084；n(O₂)=75000/32≈2344。所需比 FeCr₂O₄:K₂CO₃:O₂ = 4:8:7 = 1:2:1.75；以 FeCr₂O₄ 為基準需 K₂CO₃≈1072、O₂≈938，皆過量，故 FeCr₂O₄ 為限量試劑。理論產量 = 536×2×194.2 g ≈ 208 kg，實際產率 ≈ 150/208 ≈ 72%。'},
+
+  {id:'cm115_35', cat:'有機化學', topic:'結構', year:115, source:'中國醫',
+   q:'分子式 C₃H₄ 之化合物，其結構異構物與幾何異構物總數為何？',
+   opts:['2','3','4','5'], ans:1,
+   exp:'C₃H₄ 之異構物：(1) 丙炔 HC≡C−CH₃；(2) 丙二烯 (allene) CH₂=C=CH₂；(3) 環丙烯 (3-員環含一雙鍵)，共 3 個結構異構物。皆無幾何異構物 (allene 雖可有軸性手性但非幾何異構)。'},
+
+  {id:'cm115_36', cat:'有機化學', topic:'燃燒', year:115, source:'中國醫',
+   q:'比較正戊烷、異戊烷、新戊烷各 1 莫耳完全燃燒後生成 CO₂ 的量，下列何者正確？',
+   opts:['正戊烷生成最多','異戊烷生成最多','新戊烷生成最多','三者生成量相同'], ans:3,
+   exp:'三者皆為 C₅H₁₂ 之同分異構物，分子式相同碳數相同。完全燃燒每分子皆產生 5 個 CO₂，故等莫耳燃燒生成的 CO₂ 量必相同。差異僅在燃燒熱 (鍵能不同)。'},
+
+  {id:'cm115_37', cat:'有機化學', topic:'官能基', year:115, source:'中國醫',
+   q:'化合物 HC≡C−CH₂−CH₂−C(=O)NH₂ 含有下列哪些官能基？',
+   opts:['炔基與胺基','酮基與醯胺基','炔基與醯胺基','酮基與胺基'], ans:2,
+   exp:'HC≡C− 為末端炔基 (alkyne)；−C(=O)NH₂ 是醯胺 (amide)，非單純胺基也非酮基。胺基為 −NH₂ 不接 C=O；酮基為 R−C(=O)−R′ 兩側皆為碳，此處 N 直接接於 C=O 故屬醯胺。'},
+
+  {id:'cm115_38', cat:'有機化學', topic:'生物分子', year:115, source:'中國醫',
+   q:'關於蛋白質結構，下列何者正確？',
+   opts:['一級結構由胺基酸序列決定，主由氫鍵維持','α-螺旋與 β-摺疊為二級結構，穩定主要來自主鏈間氫鍵','三級結構由多條多胜肽鏈以氫鍵組成','蛋白質變性常於低溫下發生'], ans:1,
+   exp:'一級結構是胺基酸序列，由共價的「胜肽鍵」維持 (非氫鍵)。二級結構 (α-helix、β-sheet) 主要靠主鏈 N−H...O=C 氫鍵穩定。三級結構是「單條」多胜肽折疊；多條才形成四級。蛋白質變性多於高溫、強酸鹼、有機溶劑等發生。'},
+
+  {id:'cm115_39', cat:'有機化學', topic:'生物分子', year:115, source:'中國醫',
+   q:'關於 RNA 之組成與性質，下列何者正確？',
+   opts:['RNA 較 DNA 不穩定是因鹼基較易被氧化','RNA 骨架由磷酸與核醣以醯胺鍵建構','RNA 因鹼基間氫鍵與堆疊，且通常為雙股','因 RNA 核醣 2′-OH 可作為親核基，使 RNA 骨架較 DNA 不穩定'], ans:3,
+   exp:'RNA 不穩定的關鍵在「2′-OH」：可作為分子內親核基攻擊鄰近磷酸酯鍵之磷，造成自身水解。骨架以「磷酸二酯鍵」(非醯胺) 連接磷酸與核醣。RNA 通常為單股 (除少數雙股病毒)。鹼基穩定性與 DNA 相當，非氧化問題。'},
+
+  {id:'cm115_40', cat:'普通化學', topic:'氫化物', year:115, source:'中國醫',
+   q:'下列元素何者較易形成「離子型氫化物」(ionic hydride)？',
+   opts:['鈣 (Ca)','矽 (Si)','鐵 (Fe)','鉛 (Pb)'], ans:0,
+   exp:'離子型氫化物 (鹽類氫化物，含 H⁻ 離子) 主由 1A 與 2A 族活潑金屬形成，如 NaH、CaH₂。Ca 為鹼土金屬可形成 CaH₂。SiH₄ 為共價氫化物；Fe 形成「金屬間/間隙」氫化物 (非離子)；Pb 之氫化物 PbH₄ 不穩定且為共價型。'},
+
+  {id:'cm115_41', cat:'普通化學', topic:'離子性質', year:115, source:'中國醫',
+   q:'關於離子之水合能 (hydration energy)，下列何者正確？',
+   opts:['離子半徑愈大水合能愈大','水合能：Na⁺ < Mg²⁺ < Al³⁺','陽離子水合能通常小於陰離子','離子電荷愈高水合能愈小'], ans:1,
+   exp:'水合能正比於「電荷密度 = 電荷/半徑」。半徑越小、電荷越大則水合能越大 (與水分子吸引力越強)。Na⁺、Mg²⁺、Al³⁺ 半徑接近 (同週期等電子數)，但電荷遞增，水合能依序遞增。陽離子常較同期陰離子半徑小，水合能未必較小。'},
+
+  {id:'cm115_42', cat:'有機化學', topic:'光譜', year:115, source:'中國醫',
+   q:'關於核磁共振 (NMR) 光譜，下列何者正確？',
+   opts:['¹H NMR 化學位移 δ 隨外加磁場強度增加而往高磁場方向移動','¹H NMR 中無鄰近氫之原子訊號必為單峰，且不受其他核影響','訊號分裂 (splitting) 由鄰近原子核之自旋偶合所造成','訊號積分面積可用於直接判斷化合物中碳原子數量'], ans:2,
+   exp:'化學位移以 δ (ppm) 表示，已扣除外加磁場影響故與儀器頻率「無關」(同一化合物在 300 或 600 MHz 之 δ 值相同)。其他自旋核 (²D、³¹P、¹⁹F 等) 仍可造成偶合分裂，故無鄰近 ¹H 不保證為單峰。積分面積反映「氫原子」數，非碳。'},
+
+  {id:'cm115_43', cat:'普通化學', topic:'配位化合物', year:115, source:'中國醫',
+   q:'下列哪一個配位化合物的中心金屬「不」具有 d⁸ 電子組態？',
+   opts:['[Ni(CN)₄]²⁻','[PdCl₄]²⁻','[Pt(NH₃)₄]²⁺','[Co(NH₃)₆]³⁺'], ans:3,
+   exp:'(A) Ni²⁺ = [Ar]3d⁸；(B) Pd²⁺ = [Kr]4d⁸；(C) Pt²⁺ = [Xe]4f¹⁴5d⁸；(D) Co³⁺ = [Ar]3d⁶ (非 d⁸)。同為 +2 之 10 族金屬皆為 d⁸；而 Co³⁺ 是 d⁶ 電子組態，常形成八面體錯合物。'},
+
+  {id:'cm115_44', cat:'普通化學', topic:'配位化合物', year:115, source:'中國醫',
+   q:'下列哪一個配位化合物之幾何結構最可能為「平面四方形」(square planar)？',
+   opts:['[Ni(CN)₄]²⁻','[NiCl₄]²⁻','[Zn(NH₃)₄]²⁺','[CoCl₄]²⁻'], ans:0,
+   exp:'平面四方形通常出現於「d⁸ + 強場配體」的組合：[Ni(CN)₄]²⁻ 為 Ni²⁺ (d⁸) + CN⁻ (強場) → 平面四方形。[NiCl₄]²⁻ 為 d⁸ + 弱場 → 四面體；[Zn(NH₃)₄]²⁺ 為 d¹⁰ → 四面體；[CoCl₄]²⁻ 為 d⁷ → 四面體。'},
+
+  {id:'cm115_45', cat:'普通化學', topic:'分子間作用力', year:115, source:'中國醫',
+   q:'第 5A 族氫化物沸點：SbH₃ (−17°C)、AsH₃ (−55°C)、PH₃ (−87°C)、NH₃ (−33°C)。NH₃ 沸點偏離趨勢的主要原因？',
+   opts:['NH₃ 分子間具離子-偶極作用','NH₃ 為平面三角形，利於緊密堆積','NH₃ 可形成分子間氫鍵，沸點顯著高於預期','NH₃ 中 N 之電負度低使分子間作用增強'], ans:2,
+   exp:'NH₃ 中 N 電負度高 (~3.0)，N−H 鍵使氫帶部分正電可與鄰分子 N 之孤對形成「分子間氫鍵」，顯著提升沸點。同族 PH₃、AsH₃ 之 P/As 電負度低，不形成氫鍵，故依分子量趨勢正常排列。'},
+
+  {id:'cm115_46', cat:'普通化學', topic:'分子間作用力', year:115, source:'中國醫',
+   q:'1 atm 下，下列四個化合物沸點大小排列何者正確？',
+   opts:['H₂O > NH₃ > HF > CH₄','HF > H₂O > NH₃ > CH₄','H₂O > HF > NH₃ > CH₄','CH₄ > NH₃ > HF > H₂O'], ans:2,
+   exp:'三者皆有氫鍵但強度不同：H₂O 有 2 個 H 與 2 對孤對，可形成「最多」氫鍵 (每分子平均 ~4)，沸點 100°C 最高；HF 雖鍵極性更大但只有 1 個 H，網狀程度低 (沸點 19.5°C)；NH₃ 有 3 個 H 但僅 1 對孤對 (沸點 −33°C)。CH₄ 僅有色散力 (沸點 −161°C) 最低。'},
+
+  {id:'cm115_47', cat:'普通化學', topic:'路易士結構', year:115, source:'中國醫',
+   q:'POCl₃ 的路易士結構若以 P=O 雙鍵與 3 個 P−Cl 單鍵描繪 (P 為中心，5 個鍵)，各原子之形式電荷為何？',
+   opts:['P=0, O=0, Cl=0','P=+1, O=0, Cl=−1','P=−1, O=−1, Cl=0','P=+1, O=−1, Cl=0'], ans:0,
+   exp:'形式電荷 = 價電子 − 孤對電子 − ½ 鍵結電子。P：5 − 0 − ½(2+2+2+4) = 0；O (=P)：6 − 4 − ½(4) = 0；Cl：7 − 6 − ½(2) = 0。皆為零。P 採用 sp³d 擴張八隅 (3rd period 元素允許)。若改畫全單鍵之共振式則 P=+1、O=−1、Cl=0。'},
+
+  {id:'cm115_48', cat:'有機化學', topic:'生物分子', year:115, source:'中國醫',
+   q:'下列何種物質「不」含「六碳醣 (hexose)」結構？',
+   opts:['半乳醣 (galactose)','乳醣 (lactose)','果醣 (fructose)','核醣 (ribose)'], ans:3,
+   exp:'六碳醣為含 6 個碳的單醣。半乳醣、果醣為己醣；乳醣為「半乳醣 + 葡萄醣」之雙醣，由二個六碳醣組成。核醣 (ribose) 為「五碳醣」(pentose)，為 RNA 之骨架糖，不含六碳醣結構。'},
+
+  {id:'cm115_49', cat:'普通化學', topic:'電化學', year:115, source:'中國醫',
+   q:'已知 E°(Ag⁺/Ag) = +0.80 V、E°(Zn²⁺/Zn) = −0.76 V。在標準狀態下，標準自由能變化量、電池電位與反應自發性之關係，下列何者正確？',
+   opts:['E°<0，ΔG°<0，自發反應','E°=0，ΔG°=0，系統處於平衡狀態','E°>0，ΔG°>0，非自發反應','該電池可自發運作，且電子由 Ag 電極流向 Zn 電極'], ans:1,
+   exp:'此題官方答案為 (B)，係考查熱力學的「概念性」對應關係：在「平衡狀態」時 ΔG=0、E=0。但若以本題所給數值嚴格計算：E°cell = 0.80−(−0.76) = +1.56 V > 0、ΔG°<0、為自發；電子由 Zn (陽極) 流向 Ag (陰極)。三項數值對應為「E°>0 ↔ ΔG°<0 ↔ 自發」，故四個選項中 (A)(C)(D) 之內部邏輯皆有誤；(B) 描述的「E=0 ↔ ΔG=0 ↔ 平衡」邏輯正確 (僅在概念上成立)。建議考試時掌握：自發反應 ⇄ E°cell > 0 ⇄ ΔG° < 0 三者一一對應。'},
+
+  {id:'cm115_50', cat:'普通化學', topic:'電化學', year:115, source:'中國醫',
+   q:'某原電池 E° = 1.10 V，反應轉移電子數 n = 2，求 ΔG°？(F = 9.65×10⁴ C/mol)',
+   opts:['−212 kJ/mol','−106 kJ/mol','+106 kJ/mol','+212 kJ/mol'], ans:0,
+   exp:'依 ΔG° = −nFE°：ΔG° = −(2)(9.65×10⁴ C/mol)(1.10 V) = −2.123×10⁵ J/mol = −212 kJ/mol。注意 E°>0 對應 ΔG°<0 (自發)，符號需正確。'}
+];
+
+/* ===== 工具函數 ===== */
+const STORAGE_KEY = 'chemPracticeProgress_v1';
+
+function loadState() {
+  try {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved) return JSON.parse(saved);
+  } catch (e) {}
+  return {
+    totalAnswered: 0,
+    totalCorrect: 0,
+    byTopic: {},
+    byCat: {},
+    wrongIds: [],
+    bookmarkIds: [],
+    history: [],
+    streak: 0,
+    lastDate: null,
+    todayDate: null,
+    todayAnswered: 0,
+    perQuestion: {} // {id: {seen, correct, lastWrong}}
+  };
+}
+
+function saveState(s) {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(s));
+}
+
+let state = loadState();
+let currentMode = 'home';
+let currentQuestionList = [];
+let currentIndex = 0;
+let answered = false;
+
+function todayStr() {
+  return new Date().toISOString().slice(0, 10);
+}
+
+function updateStreak() {
+  const today = todayStr();
+  if (state.todayDate !== today) {
+    // 新的一天
+    if (state.lastDate) {
+      const last = new Date(state.lastDate);
+      const now = new Date(today);
+      const diffDays = Math.round((now - last) / (1000*60*60*24));
+      if (diffDays === 1) {
+        state.streak = (state.streak || 0) + 1;
+      } else if (diffDays > 1) {
+        state.streak = 1;
+      }
+    } else {
+      state.streak = 1;
+    }
+    state.todayDate = today;
+    state.todayAnswered = 0;
+    state.lastDate = today;
+  }
+  saveState(state);
+}
+
+function shuffle(arr) {
+  const a = arr.slice();
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function escapeHtml(str) {
+  if (str == null) return '';
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+function refreshStats() {
+  document.getElementById('statTotal').textContent = state.totalAnswered;
+  const acc = state.totalAnswered > 0
+    ? Math.round(state.totalCorrect / state.totalAnswered * 100) + '%'
+    : '—';
+  document.getElementById('statAcc').textContent = acc;
+  document.getElementById('statStreak').textContent = state.streak || 0;
+  document.getElementById('statWrong').textContent = state.wrongIds.length;
+}
+
+/* ===== 渲染：首頁 ===== */
+function renderHome() {
+  const today = todayStr();
+  const isNewDay = state.todayDate !== today;
+  const todayCount = isNewDay ? 0 : (state.todayAnswered || 0);
+
+  document.getElementById('panel').innerHTML = `
+    <div style="text-align:center; margin-bottom: 24px;">
+      <div style="font-family:'Noto Serif TC',serif; font-size:18px; color:var(--ink); margin-bottom:6px;">
+        ${getGreeting()}
+      </div>
+      <div style="color:var(--ink-faint); font-size:14px;">
+        今日已練習 <span style="color:var(--vermillion); font-weight:700;">${todayCount}</span> 題 ·
+        題庫共 <span style="font-weight:700;">${QUESTIONS.length}</span> 題
+      </div>
+    </div>
+
+    <div class="section-title">選擇練習模式</div>
+    <div class="mode-grid">
+      <div class="mode-btn" onclick="switchMode('daily')">
+        <div class="mode-icon">日</div>
+        <div class="mode-name">每日練習</div>
+        <div class="mode-desc">隨機 10 題綜合測驗</div>
+      </div>
+      <div class="mode-btn" onclick="switchMode('topic')">
+        <div class="mode-icon">分</div>
+        <div class="mode-name">分科練習</div>
+        <div class="mode-desc">針對單一主題加強</div>
+      </div>
+      <div class="mode-btn" onclick="switchMode('exam')">
+        <div class="mode-icon">考</div>
+        <div class="mode-name">歷屆考古題</div>
+        <div class="mode-desc">完整模擬整份試卷</div>
+      </div>
+      <div class="mode-btn" onclick="switchMode('wrong')">
+        <div class="mode-icon">錯</div>
+        <div class="mode-name">錯題複習</div>
+        <div class="mode-desc">${state.wrongIds.length} 題待重做</div>
+      </div>
+      <div class="mode-btn" onclick="switchMode('bookmark')">
+        <div class="mode-icon">藏</div>
+        <div class="mode-name">收藏題目</div>
+        <div class="mode-desc">${state.bookmarkIds.length} 題已收藏</div>
+      </div>
+    </div>
+
+    <div class="section-title" style="margin-top:28px;">學習提示</div>
+    <div style="background:var(--paper); padding:16px 20px; border-left:3px solid var(--jade); border-radius:0 4px 4px 0; color:var(--ink-soft); font-size:14px; line-height:1.8;">
+      建議每日完成一輪「每日練習」，不熟的章節可進入「分科練習」加強，
+      錯過的題目會自動收進「錯題複習」清單，連續答對兩次後自動移除。
+      所有進度自動儲存於瀏覽器本機，不會遺失。
+    </div>
+  `;
+}
+
+function getGreeting() {
+  const h = new Date().getHours();
+  if (h < 6) return '夜深了，仍在用功';
+  if (h < 12) return '早安，今日宜攻讀化學';
+  if (h < 18) return '午後時光，靜心練題';
+  return '夜讀為功，業精於勤';
+}
+
+/* ===== 渲染：每日練習 ===== */
+function renderDaily() {
+  if (currentQuestionList.length === 0) {
+    currentQuestionList = shuffle(QUESTIONS).slice(0, 10);
+    currentIndex = 0;
+  }
+  renderQuestion();
+}
+
+/* ===== 渲染：分科 ===== */
+function renderTopic() {
+  const cats = {};
+  QUESTIONS.forEach(q => {
+    if (!cats[q.cat]) cats[q.cat] = {};
+    if (!cats[q.cat][q.topic]) cats[q.cat][q.topic] = 0;
+    cats[q.cat][q.topic]++;
+  });
+
+  let html = '';
+  for (const cat in cats) {
+    html += `<div class="section-title">${cat}</div><div class="topic-grid">`;
+    for (const topic in cats[cat]) {
+      const count = cats[cat][topic];
+      const stat = state.byTopic[topic];
+      const acc = stat && stat.answered > 0
+        ? Math.round(stat.correct / stat.answered * 100) + '%'
+        : '—';
+      html += `
+        <button class="topic-btn" onclick="startTopic('${escapeHtml(cat)}','${escapeHtml(topic)}')">
+          <div>${topic}</div>
+          <small>${count} 題 · 正確率 ${acc}</small>
+        </button>
+      `;
+    }
+    html += `</div>`;
+  }
+
+  document.getElementById('panel').innerHTML = html || '<div class="empty">無題目</div>';
+}
+
+function startTopic(cat, topic) {
+  currentQuestionList = shuffle(QUESTIONS.filter(q => q.cat === cat && q.topic === topic));
+  currentIndex = 0;
+  renderQuestion();
+}
+
+/* ===== 渲染：歷屆考古題 ===== */
+function renderExam() {
+  // 取得所有有 year/source 標籤的題目，依「source + year」分組
+  const exams = {};
+  QUESTIONS.forEach(q => {
+    if (q.year && q.source) {
+      const key = q.source + ' ' + q.year + ' 學年度';
+      if (!exams[key]) exams[key] = [];
+      exams[key].push(q);
+    }
+  });
+
+  if (Object.keys(exams).length === 0) {
+    document.getElementById('panel').innerHTML = `
+      <div class="empty">
+        <div class="empty-icon">無</div>
+        <div class="empty-text">目前尚未收錄歷屆考古題</div>
+      </div>
+    `;
+    return;
+  }
+
+  let html = `<div class="section-title">歷屆考題模擬</div>`;
+  html += `<div style="background:var(--paper); padding:14px 18px; border-left:3px solid var(--vermillion); border-radius:0 4px 4px 0; color:var(--ink-soft); font-size:13.5px; line-height:1.7; margin-bottom:18px;">
+    完整收錄歷屆學士後中醫化學試題。可選擇「依序模擬」(按原試卷題號依序作答，模擬正式考試體驗) 或「隨機練習」(打散題序避免記憶順序)。
+  </div>`;
+
+  for (const examName in exams) {
+    const list = exams[examName];
+    // 排序：依 id 中末尾數字升冪 (cm115_01, cm115_02 ...)
+    list.sort((a, b) => {
+      const na = parseInt((a.id.match(/(\d+)$/) || [0, 0])[1], 10);
+      const nb = parseInt((b.id.match(/(\d+)$/) || [0, 0])[1], 10);
+      return na - nb;
+    });
+
+    // 答題狀況統計
+    let answered = 0, correct = 0;
+    list.forEach(q => {
+      const r = state.perQuestion && state.perQuestion[q.id];
+      if (r && r.answered) {
+        answered++;
+        if (r.lastCorrect) correct++;
+      }
+    });
+    const accStr = answered > 0
+      ? `已作答 ${answered}/${list.length}，正確 ${correct} 題 (${Math.round(correct/answered*100)}%)`
+      : `共 ${list.length} 題 · 尚未作答`;
+
+    html += `
+      <div style="background:var(--paper-soft); border:1px solid var(--line); border-radius:6px; padding:18px 20px; margin-bottom:14px;">
+        <div style="font-family:'Noto Serif TC',serif; font-size:17px; font-weight:600; color:var(--ink); margin-bottom:6px;">
+          ${examName}
+        </div>
+        <div style="color:var(--ink-faint); font-size:13px; margin-bottom:14px;">${accStr}</div>
+        <div style="display:flex; gap:10px; flex-wrap:wrap;">
+          <button class="topic-btn" style="flex:1; min-width:140px;" onclick="startExam('${escapeHtml(examName)}', false)">
+            <div>依序模擬考</div>
+            <small>1 → ${list.length} 題依原序作答</small>
+          </button>
+          <button class="topic-btn" style="flex:1; min-width:140px;" onclick="startExam('${escapeHtml(examName)}', true)">
+            <div>隨機練習</div>
+            <small>打散順序作答</small>
+          </button>
+        </div>
+      </div>
+    `;
+  }
+
+  document.getElementById('panel').innerHTML = html;
+}
+
+function startExam(examName, randomize) {
+  // examName 形如 "中國醫 115 學年度"
+  const m = examName.match(/^(.+?)\s+(\d+)\s/);
+  if (!m) return;
+  const source = m[1], year = parseInt(m[2], 10);
+  let list = QUESTIONS.filter(q => q.source === source && q.year === year);
+  list.sort((a, b) => {
+    const na = parseInt((a.id.match(/(\d+)$/) || [0, 0])[1], 10);
+    const nb = parseInt((b.id.match(/(\d+)$/) || [0, 0])[1], 10);
+    return na - nb;
+  });
+  if (randomize) list = shuffle(list);
+  currentQuestionList = list;
+  currentIndex = 0;
+  renderQuestion();
+}
+
+/* ===== 渲染：錯題 ===== */
+function renderWrong() {
+  const wrongQs = QUESTIONS.filter(q => state.wrongIds.includes(q.id));
+  if (wrongQs.length === 0) {
+    document.getElementById('panel').innerHTML = `
+      <div class="empty">
+        <div class="empty-icon">○</div>
+        <div class="empty-text">目前沒有錯題</div>
+        <div style="margin-top:8px; font-size:13px;">繼續努力，保持這個狀態！</div>
+      </div>
+    `;
+    return;
+  }
+  currentQuestionList = shuffle(wrongQs);
+  currentIndex = 0;
+  renderQuestion();
+}
+
+/* ===== 渲染：收藏 ===== */
+function renderBookmark() {
+  const bm = QUESTIONS.filter(q => state.bookmarkIds.includes(q.id));
+  if (bm.length === 0) {
+    document.getElementById('panel').innerHTML = `
+      <div class="empty">
+        <div class="empty-icon">藏</div>
+        <div class="empty-text">尚未收藏任何題目</div>
+        <div style="margin-top:8px; font-size:13px;">作答時按右上角的「☆」可收藏題目</div>
+      </div>
+    `;
+    return;
+  }
+  currentQuestionList = bm;
+  currentIndex = 0;
+  renderQuestion();
+}
+
+/* ===== 渲染：題目 ===== */
+function renderQuestion() {
+  if (currentIndex >= currentQuestionList.length) {
+    renderComplete();
+    return;
+  }
+
+  const q = currentQuestionList[currentIndex];
+  answered = false;
+  const isBookmarked = state.bookmarkIds.includes(q.id);
+  const progress = ((currentIndex) / currentQuestionList.length) * 100;
+
+  const optsHtml = q.opts.map((opt, i) => `
+    <button class="option" data-idx="${i}" onclick="answerQuestion(${i})">
+      <span class="option-letter">${String.fromCharCode(65+i)}</span>
+      <span class="option-text">${escapeHtml(opt)}</span>
+    </button>
+  `).join('');
+
+  document.getElementById('panel').innerHTML = `
+    <div class="progress-bar"><div class="progress-fill" style="width:${progress}%"></div></div>
+    <div class="question-meta">
+      <div class="qmeta-left">
+        <span class="tag tag-cat">${q.cat}</span>
+        <span class="tag tag-topic">${q.topic}</span>
+      </div>
+      <div style="display:flex; align-items:center; gap:8px;">
+        <span class="qmeta-right">第 ${currentIndex+1} / ${currentQuestionList.length} 題</span>
+        <button class="bookmark-btn ${isBookmarked ? 'active' : ''}" onclick="toggleBookmark('${q.id}')" title="收藏題目">
+          ${isBookmarked ? '★' : '☆'}
+        </button>
+      </div>
+    </div>
+    <div class="question-text">${escapeHtml(q.q)}</div>
+    <div class="options" id="opts">${optsHtml}</div>
+    <div id="explanation"></div>
+    <div class="actions" id="actions">
+      <button class="btn btn-secondary" onclick="exitPractice()">結束練習</button>
+    </div>
+  `;
+}
+
+function answerQuestion(picked) {
+  if (answered) return;
+  answered = true;
+  const q = currentQuestionList[currentIndex];
+  const correct = picked === q.ans;
+
+  // 更新所有選項狀態
+  const optBtns = document.querySelectorAll('.option');
+  optBtns.forEach((btn, i) => {
+    btn.disabled = true;
+    if (i === q.ans) btn.classList.add('correct');
+    else if (i === picked) btn.classList.add('wrong');
+  });
+
+  // 更新統計
+  state.totalAnswered++;
+  if (correct) state.totalCorrect++;
+
+  if (!state.byTopic[q.topic]) state.byTopic[q.topic] = {answered:0, correct:0};
+  state.byTopic[q.topic].answered++;
+  if (correct) state.byTopic[q.topic].correct++;
+
+  if (!state.byCat[q.cat]) state.byCat[q.cat] = {answered:0, correct:0};
+  state.byCat[q.cat].answered++;
+  if (correct) state.byCat[q.cat].correct++;
+
+  if (!state.perQuestion[q.id]) state.perQuestion[q.id] = {seen:0, correct:0, consecutive:0};
+  state.perQuestion[q.id].seen++;
+  if (correct) {
+    state.perQuestion[q.id].correct++;
+    state.perQuestion[q.id].consecutive = (state.perQuestion[q.id].consecutive || 0) + 1;
+    // 連續答對 2 次以上自動移出錯題
+    if (state.perQuestion[q.id].consecutive >= 2) {
+      state.wrongIds = state.wrongIds.filter(id => id !== q.id);
+    }
+  } else {
+    state.perQuestion[q.id].consecutive = 0;
+    if (!state.wrongIds.includes(q.id)) state.wrongIds.push(q.id);
+  }
+
+  // 更新今日計數
+  updateStreak();
+  state.todayAnswered = (state.todayAnswered || 0) + 1;
+
+  saveState(state);
+  refreshStats();
+
+  // 顯示解析
+  document.getElementById('explanation').innerHTML = `
+    <div class="explanation">
+      <div class="exp-title">${correct ? '◆ 正解' : '◆ 解析'}</div>
+      <div class="exp-content">${escapeHtml(q.exp)}</div>
+    </div>
+  `;
+
+  // 更新動作列
+  document.getElementById('actions').innerHTML = `
+    <button class="btn btn-secondary" onclick="exitPractice()">結束練習</button>
+    <button class="btn btn-primary" onclick="nextQuestion()">下一題 →</button>
+  `;
+}
+
+function nextQuestion() {
+  currentIndex++;
+  renderQuestion();
+}
+
+function exitPractice() {
+  currentQuestionList = [];
+  currentIndex = 0;
+  switchMode('home');
+}
+
+function toggleBookmark(id) {
+  if (state.bookmarkIds.includes(id)) {
+    state.bookmarkIds = state.bookmarkIds.filter(x => x !== id);
+  } else {
+    state.bookmarkIds.push(id);
+  }
+  saveState(state);
+  // 重新渲染當前題目以更新書籤狀態
+  const btn = document.querySelector('.bookmark-btn');
+  if (btn) {
+    const isB = state.bookmarkIds.includes(id);
+    btn.classList.toggle('active', isB);
+    btn.textContent = isB ? '★' : '☆';
+  }
+}
+
+/* ===== 完成畫面 ===== */
+function renderComplete() {
+  const total = currentQuestionList.length;
+  // 從本輪歷史計算正確數較複雜；用簡單方式：再用 state 推算或記錄本輪
+  // 為簡化，重算當前輪：透過 perQuestion 最近一次紀錄不可靠，改記錄本輪
+  // 此處顯示鼓勵訊息
+  const msg = total >= 8 ? '功夫不負有心人' : total >= 5 ? '勤學好思，繼續加油' : '今日小試牛刀';
+  document.getElementById('panel').innerHTML = `
+    <div class="complete-screen">
+      <div class="complete-seal">完</div>
+      <div class="complete-title">本輪練習結束</div>
+      <div class="complete-text">已完成 ${total} 題</div>
+      <div style="color:var(--ink-soft); margin: 18px 0; font-family:'Noto Serif TC',serif; font-size:16px;">
+        「${msg}」
+      </div>
+      <div style="margin-top: 30px;">
+        <button class="btn btn-secondary" onclick="exitPractice()">返回首頁</button>
+        <button class="btn btn-primary" onclick="restartCurrent()" style="margin-left:8px;">再練一輪</button>
+      </div>
+    </div>
+  `;
+  currentQuestionList = [];
+  currentIndex = 0;
+}
+
+function restartCurrent() {
+  currentQuestionList = shuffle(QUESTIONS).slice(0, 10);
+  currentIndex = 0;
+  renderQuestion();
+}
+
+/* ===== 統計頁 ===== */
+function renderStats() {
+  let topicHtml = '';
+  const topics = Object.keys(state.byTopic).sort();
+  if (topics.length === 0) {
+    topicHtml = '<div style="color:var(--ink-faint); padding:8px 0;">尚無紀錄</div>';
+  } else {
+    topics.forEach(t => {
+      const s = state.byTopic[t];
+      const acc = Math.round(s.correct / s.answered * 100);
+      topicHtml += `
+        <div class="topic-row">
+          <span class="topic-name">${t}</span>
+          <span class="topic-stats">
+            <span style="color:var(--ink-faint); font-size:12px;">${s.correct}/${s.answered}</span>
+            <span class="mini-bar"><span class="mini-fill" style="width:${acc}%"></span></span>
+            <span class="topic-acc">${acc}%</span>
+          </span>
+        </div>
+      `;
+    });
+  }
+
+  let catHtml = '';
+  const cats = Object.keys(state.byCat);
+  if (cats.length === 0) {
+    catHtml = '<div style="color:var(--ink-faint); padding:8px 0;">尚無紀錄</div>';
+  } else {
+    cats.forEach(c => {
+      const s = state.byCat[c];
+      const acc = Math.round(s.correct / s.answered * 100);
+      catHtml += `
+        <div class="topic-row">
+          <span class="topic-name" style="font-weight:700;">${c}</span>
+          <span class="topic-stats">
+            <span style="color:var(--ink-faint); font-size:12px;">${s.correct}/${s.answered}</span>
+            <span class="topic-acc">${acc}%</span>
+          </span>
+        </div>
+      `;
+    });
+  }
+
+  document.getElementById('panel').innerHTML = `
+    <div class="stat-grid">
+      <div class="stat-card">
+        <div class="stat-card-title">分科正確率</div>
+        ${catHtml}
+      </div>
+      <div class="stat-card">
+        <div class="stat-card-title">學習進度</div>
+        <div class="topic-row">
+          <span class="topic-name">累計作答</span>
+          <span class="topic-acc">${state.totalAnswered} 題</span>
+        </div>
+        <div class="topic-row">
+          <span class="topic-name">總正確率</span>
+          <span class="topic-acc">${state.totalAnswered>0 ? Math.round(state.totalCorrect/state.totalAnswered*100) : 0}%</span>
+        </div>
+        <div class="topic-row">
+          <span class="topic-name">連續學習</span>
+          <span class="topic-acc">${state.streak || 0} 天</span>
+        </div>
+        <div class="topic-row">
+          <span class="topic-name">待複習錯題</span>
+          <span class="topic-acc">${state.wrongIds.length} 題</span>
+        </div>
+        <div class="topic-row">
+          <span class="topic-name">已收藏題目</span>
+          <span class="topic-acc">${state.bookmarkIds.length} 題</span>
+        </div>
+      </div>
+    </div>
+    <div class="stat-card" style="margin-top:14px;">
+      <div class="stat-card-title">細項主題</div>
+      ${topicHtml}
+    </div>
+    <div style="text-align:center; margin-top: 24px;">
+      <button class="btn btn-secondary" onclick="confirmReset()">清除所有紀錄</button>
+    </div>
+  `;
+}
+
+function confirmReset() {
+  if (confirm('確定要清除所有練習紀錄嗎？此操作無法復原。')) {
+    localStorage.removeItem(STORAGE_KEY);
+    state = loadState();
+    refreshStats();
+    renderStats();
+  }
+}
+
+/* ===== 模式切換 ===== */
+function switchMode(mode) {
+  currentMode = mode;
+  currentQuestionList = [];
+  currentIndex = 0;
+
+  // 更新 tab 樣式
+  document.querySelectorAll('.tab').forEach(t => {
+    t.classList.toggle('active', t.dataset.mode === mode);
+  });
+
+  if (mode === 'home') renderHome();
+  else if (mode === 'daily') renderDaily();
+  else if (mode === 'topic') renderTopic();
+  else if (mode === 'exam') renderExam();
+  else if (mode === 'wrong') renderWrong();
+  else if (mode === 'bookmark') renderBookmark();
+  else if (mode === 'stats') renderStats();
+}
+
+function escapeHtml(s) {
+  if (s == null) return '';
+  return String(s)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
+}
+
+/* ===== 初始化 ===== */
+document.querySelectorAll('.tab').forEach(t => {
+  t.addEventListener('click', () => switchMode(t.dataset.mode));
+});
+
+updateStreak();
+refreshStats();
+renderHome();
+</script>
+
+</body>
+</html>

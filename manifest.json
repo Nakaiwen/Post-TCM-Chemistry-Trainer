@@ -1,0 +1,17 @@
+{
+  "name": "後中醫化學考題練習器",
+  "short_name": "後中醫化學",
+  "description": "後中醫入學考化學科每日練習：375 題題庫含 105-115 學年度中國醫考古題",
+  "lang": "zh-TW",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#F2ECDE",
+  "theme_color": "#8C3430",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

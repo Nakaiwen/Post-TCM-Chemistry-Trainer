@@ -4,6 +4,12 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>後中醫化學考題練習器</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#8C3430">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="後中醫化學">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;500;700;900&family=Noto+Sans+TC:wght@300;400;500;700&family=Crimson+Pro:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
@@ -2804,7 +2810,9 @@ function renderStats() {
       <div class="stat-card-title">細項主題</div>
       ${topicHtml}
     </div>
-    <div style="text-align:center; margin-top: 24px;">
+    <div style="text-align:center; margin-top: 24px; display:flex; gap:10px; justify-content:center; flex-wrap:wrap;">
+      <button class="btn btn-secondary" onclick="exportProgress()">匯出進度</button>
+      <button class="btn btn-secondary" onclick="importProgress()">匯入進度</button>
       <button class="btn btn-secondary" onclick="confirmReset()">清除所有紀錄</button>
     </div>
   `;
@@ -2817,6 +2825,75 @@ function confirmReset() {
     refreshStats();
     renderStats();
   }
+}
+
+/* ===== 進度匯出／匯入 ===== */
+const EXPORT_APP_TAG = 'houzhongyi-chem-practice';
+
+function exportProgress() {
+  const payload = {
+    app: EXPORT_APP_TAG,
+    storageKey: STORAGE_KEY,
+    exportedAt: new Date().toISOString(),
+    questionCount: QUESTIONS.length,
+    data: state
+  };
+  const blob = new Blob([JSON.stringify(payload, null, 2)], {type: 'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  const d = new Date();
+  const stamp = d.getFullYear() + String(d.getMonth()+1).padStart(2,'0') + String(d.getDate()).padStart(2,'0');
+  a.href = url;
+  a.download = '後中醫化學練習進度-' + stamp + '.json';
+  document.body.appendChild(a);
+  a.click();
+  setTimeout(() => { document.body.removeChild(a); URL.revokeObjectURL(url); }, 1000);
+}
+
+function importProgress() {
+  const input = document.createElement('input');
+  input.type = 'file';
+  input.accept = '.json,application/json';
+  input.onchange = (e) => {
+    const file = e.target.files && e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      try {
+        const payload = JSON.parse(reader.result);
+        const incoming = (payload && payload.app === EXPORT_APP_TAG && payload.data) ? payload.data
+                       : (payload && typeof payload.totalAnswered === 'number' && payload.perQuestion) ? payload
+                       : null;
+        if (!incoming || typeof incoming !== 'object' || !('perQuestion' in incoming)) {
+          alert('這不是本練習器的進度檔，已取消匯入。');
+          return;
+        }
+        const summary = '檔案內容：已作答 ' + (incoming.totalAnswered || 0) + ' 題、待複習錯題 '
+          + ((incoming.wrongIds && incoming.wrongIds.length) || 0) + ' 題、收藏 '
+          + ((incoming.bookmarkIds && incoming.bookmarkIds.length) || 0) + ' 題。\n\n匯入將覆蓋目前裝置上的紀錄，確定要繼續嗎？';
+        if (!confirm(summary)) return;
+        const base = loadStateDefaults();
+        const merged = Object.assign(base, incoming);
+        saveState(merged);
+        state = merged;
+        refreshStats();
+        renderStats();
+        alert('匯入完成！');
+      } catch (err) {
+        alert('檔案格式無法解析，已取消匯入。');
+      }
+    };
+    reader.readAsText(file);
+  };
+  input.click();
+}
+
+function loadStateDefaults() {
+  return {
+    totalAnswered: 0, totalCorrect: 0, byTopic: {}, byCat: {},
+    wrongIds: [], bookmarkIds: [], history: [], streak: 0,
+    lastDate: null, todayDate: null, todayAnswered: 0, perQuestion: {}
+  };
 }
 
 /* ===== 模式切換 ===== */
@@ -2857,5 +2934,12 @@ refreshStats();
 renderHome();
 </script>
 
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('sw.js').catch(() => {});
+  });
+}
+</script>
 </body>
 </html>

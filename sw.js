@@ -1,5 +1,5 @@
 /* 後中醫化學考題練習器 Service Worker */
-const CACHE_NAME = 'chem-practice-v1';
+const CACHE_NAME = 'chem-practice-v2-yishou';
 const PRECACHE = [
   './',
   './index.html',
